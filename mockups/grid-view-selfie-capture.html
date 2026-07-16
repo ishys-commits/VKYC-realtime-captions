@@ -1,0 +1,509 @@
+<title>Grid View For Selfie Capture</title>
+<style>
+  :root{
+    --teal:#128a97;
+    --teal-dark:#0e6e79;
+    --teal-tint:#e3f3f4;
+    --ink:#20242c;
+    --ink-soft:#5b6270;
+    --line:#e2e5ec;
+    --chrome-bg:#dbe4f7;
+    --page-bg:#f4f5f9;
+    --card-bg:#ffffff;
+    --gray-fill:#dfe1e6;
+    --purple:#8b3fd1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#ffffff;
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:28px;
+    overflow-x:auto;
+  }
+  .caption-label{
+    color:#9aa0ac;
+    font-size:15px;
+    margin:0 0 14px 4px;
+  }
+  .browser{
+    min-width:1200px;
+    max-width:1900px;
+    margin:0 auto;
+    border:1px solid #c9cfdd;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 1px 3px rgba(20,24,33,.08);
+  }
+
+  /* ---------- Chrome tab strip ---------- */
+  .tabstrip{
+    background:var(--chrome-bg);
+    display:flex;
+    align-items:flex-end;
+    gap:2px;
+    padding:8px 10px 0;
+  }
+  .tab{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 14px;
+    border-radius:9px 9px 0 0;
+    font-size:13px;
+    color:var(--ink-soft);
+    max-width:220px;
+  }
+  .tab.active{
+    background:#ffffff;
+    color:var(--ink);
+    font-weight:500;
+  }
+  .tab .favicon{
+    width:15px;height:15px;flex:0 0 auto;color:var(--teal);
+  }
+  .tab .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tab .close{margin-left:auto;color:#9aa0ac;font-size:14px;line-height:1;}
+  .newtab{
+    color:var(--ink-soft);
+    padding:8px 10px;
+    font-size:16px;
+    line-height:1;
+  }
+
+  /* ---------- Address bar ---------- */
+  .addressbar{
+    background:#ffffff;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  .icon-btn{width:17px;height:17px;color:#6b7280;flex:0 0 auto;}
+  .icon-btn.dim{color:#c3c8d1;}
+  .url-pill{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#f1f3f7;
+    border-radius:20px;
+    padding:6px 12px;
+    min-width:0;
+  }
+  .url-pill .lock{width:14px;height:14px;color:#6b7280;flex:0 0 auto;}
+  .url-pill .url-text{
+    font-size:13px;color:#3d4250;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .addressbar .spacer-icons{display:flex;align-items:center;gap:14px;margin-left:6px;}
+  .paused-pill{
+    display:flex;align-items:center;gap:6px;
+    background:#f1f3f7;border-radius:20px;padding:4px 12px 4px 4px;
+    font-size:13px;color:#3d4250;font-weight:500;
+  }
+  .avatar-r{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--purple);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;
+  }
+  .chrome-update{font-size:13px;color:#3d4250;white-space:nowrap;}
+  .kebab{width:16px;height:16px;color:#6b7280;}
+
+  /* ---------- App header ---------- */
+  .appheader{
+    background:#ffffff;
+    display:flex;align-items:center;gap:10px;
+    padding:12px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .grid-icon{width:20px;height:20px;color:#3d4250;}
+  .brand{font-size:16px;font-weight:600;color:var(--ink);}
+
+  /* ---------- App body ---------- */
+  .appbody{
+    background:var(--page-bg);
+    display:flex;
+    min-height:760px;
+  }
+  .panel-left{
+    flex:1 1 56%;
+    padding:22px 24px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    min-width:0;
+  }
+  .panel-right{
+    flex:1 1 44%;
+    background:var(--page-bg);
+    padding:22px 32px 24px;
+    border-left:1px solid var(--line);
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* participants row */
+  .participants{
+    display:flex;align-items:center;gap:14px;
+  }
+  .participants .names{font-size:15px;font-weight:600;color:var(--ink);}
+  .signal-pill{
+    display:flex;align-items:center;gap:5px;
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:4px 10px;font-size:13px;color:var(--ink-soft);font-weight:600;
+  }
+  .signal-pill svg{width:15px;height:15px;color:#2fa84f;}
+  .menu-pill{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    width:30px;height:28px;display:flex;align-items:center;justify-content:center;
+    color:var(--ink-soft);
+  }
+
+  /* stage: grid + self video */
+  .stage{position:relative;flex:1;}
+  .photo-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    max-width:560px;
+  }
+  .photo{
+    position:relative;
+    aspect-ratio:3/4;
+    border-radius:6px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 2px 6px rgba(20,24,33,.12);
+    border:1px solid #e9ebf0;
+  }
+  .photo:nth-child(odd){transform:rotate(-1.6deg);}
+  .photo:nth-child(even){transform:rotate(1.4deg);}
+  .photo .fold{
+    position:absolute;top:0;right:0;
+    width:0;height:0;
+    border-style:solid;
+    border-width:0 16px 16px 0;
+    border-color:transparent #ffffff transparent transparent;
+    filter:drop-shadow(-1px 1px 1px rgba(0,0,0,.15));
+  }
+  .selfvideo{
+    position:absolute;
+    top:0;right:24px;
+    width:190px;
+  }
+  .selfvideo .frame{
+    width:100%;aspect-ratio:3/4;
+    border-radius:8px;overflow:hidden;
+    position:relative;
+    box-shadow:0 3px 10px rgba(20,24,33,.18);
+  }
+  .selfvideo .kebab-dot{
+    position:absolute;top:8px;left:8px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--teal);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;letter-spacing:1px;
+  }
+  .callctrls{
+    display:flex;justify-content:center;gap:10px;margin-top:10px;
+  }
+  .callctrls button{
+    width:34px;height:34px;border-radius:50%;
+    border:1.5px solid var(--teal);background:#fff;color:var(--teal);
+    display:flex;align-items:center;justify-content:center;
+    cursor:default;
+  }
+  .callctrls button svg{width:16px;height:16px;}
+  .callctrls button.filled{background:#fff;border-color:#c9cfdd;color:var(--ink-soft);}
+
+  /* caption bubble */
+  .caption{
+    position:relative;
+    align-self:flex-start;
+    margin-left:38%;
+    max-width:340px;
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 4px 16px rgba(20,24,33,.14);
+    padding:12px 16px;
+  }
+  .caption .who{font-size:13px;font-weight:700;color:var(--ink);margin:0 0 2px;}
+  .caption .txt{font-size:14px;color:var(--ink);margin:0;}
+
+  /* footer */
+  .footerbar{
+    background:var(--page-bg);
+    border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;
+  }
+  .poweredby{display:flex;align-items:center;gap:6px;font-size:12px;color:#9aa0ac;}
+  .poweredby .word{display:flex;align-items:center;gap:5px;color:#3d4250;font-weight:600;font-size:13px;}
+  .poweredby .word svg{width:14px;height:14px;color:var(--teal);}
+  .footer-actions{display:flex;gap:12px;}
+  .btn{
+    border-radius:8px;padding:10px 22px;font-size:14px;font-weight:600;
+    border:1.5px solid var(--teal);cursor:default;
+  }
+  .btn.outline{background:#fff;color:var(--teal);}
+  .btn.filled{background:var(--teal);color:#fff;}
+
+  /* right panel content */
+  .prevstep{
+    display:flex;align-items:center;gap:4px;
+    color:var(--teal);font-size:13px;font-weight:600;
+    margin-bottom:18px;
+  }
+  .prevstep svg{width:14px;height:14px;}
+  .stepper{
+    display:flex;align-items:center;
+    margin-bottom:22px;
+  }
+  .step-circle{
+    width:30px;height:30px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:600;
+    border:1.5px solid #c9cfdd;color:var(--ink-soft);background:#fff;
+    flex:0 0 auto;
+  }
+  .step-circle.active{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .step-line{flex:1;height:1.5px;background:#c9cfdd;min-width:16px;}
+  .step-line.active{background:var(--teal);}
+  .person-tabs{display:flex;gap:12px;margin-bottom:26px;}
+  .person-pill{
+    display:flex;align-items:center;gap:8px;
+    border-radius:8px;padding:8px 16px;font-size:14px;
+    border:1.5px solid #c9cfdd;color:var(--ink-soft);
+  }
+  .person-pill.selected{border-color:var(--teal);color:var(--teal);font-weight:600;}
+  .radio{width:14px;height:14px;border-radius:50%;border:1.5px solid currentColor;flex:0 0 auto;}
+  .person-pill.selected .radio{border-width:4px;}
+  .step-title{font-size:22px;font-weight:700;margin:0 0 6px;color:var(--ink);}
+  .step-sub{font-size:14px;color:var(--ink-soft);margin:0 0 22px;}
+  .capture-box{
+    flex:1;
+    min-height:280px;
+    background:var(--gray-fill);
+    border-radius:10px;
+    margin-bottom:26px;
+  }
+  .capture-btn{
+    align-self:center;
+    background:var(--teal);color:#fff;border:none;
+    border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600;
+    cursor:default;
+  }
+</style>
+
+<p class="caption-label">Grid View For Selfie Capture</p>
+
+<div class="browser">
+
+  <!-- Tab strip -->
+  <div class="tabstrip">
+    <div class="tab">
+      <svg class="favicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>
+      <span class="label">Home Page</span>
+      <span class="close">&times;</span>
+    </div>
+    <div class="tab active">
+      <svg class="favicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="M15 10l6-3v10l-6-3z"/></svg>
+      <span class="label">Video Call</span>
+      <span class="close">&times;</span>
+    </div>
+    <div class="newtab">+</div>
+  </div>
+
+  <!-- Address bar -->
+  <div class="addressbar">
+    <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+    <svg class="icon-btn dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v6h-6"/></svg>
+
+    <div class="url-pill">
+      <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <span class="url-text">india-vcip-agent-demo.hyperverge.co/?eToken=U2FsdGVkX188m5b6l5HoPKkeZGKq8wcGrD1YVwxUP923kqjqn26oMTWsf&hellip;</span>
+    </div>
+
+    <div class="spacer-icons">
+      <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.6 6.8L12 17l-6.2 3.5 1.6-6.8L2.2 9l6.9-.7z"/></svg>
+      <span style="color:#c9cfdd;">|</span>
+      <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-3l-2-3H9L7 7H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+      <div class="paused-pill">
+        <span class="avatar-r">R</span>
+        <span>Paused</span>
+      </div>
+      <span class="chrome-update">New Chrome available</span>
+      <svg class="kebab" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+    </div>
+  </div>
+
+  <!-- App header -->
+  <div class="appheader">
+    <svg class="grid-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="brand">Hyperverge</span>
+  </div>
+
+  <!-- App body -->
+  <div class="appbody">
+
+    <!-- LEFT: call stage -->
+    <div class="panel-left">
+      <div class="participants">
+        <span class="names">Ronith Nair, Rishab Burman &amp; 2 more</span>
+        <div class="signal-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 18v-3"/><path d="M9 18v-6"/><path d="M14 18v-9"/><path d="M19 18V6"/></svg>
+          5
+        </div>
+        <div class="menu-pill">&hellip;</div>
+      </div>
+
+      <div class="stage">
+        <div class="photo-grid">
+          <div class="photo"><div class="fold"></div>
+            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="120" height="160" fill="#e7e2da"/>
+              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
+              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
+              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
+              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
+              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
+              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
+            </svg>
+          </div>
+          <div class="photo"><div class="fold"></div>
+            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="120" height="160" fill="#e7e2da"/>
+              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
+              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
+              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
+              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
+              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
+              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
+            </svg>
+          </div>
+          <div class="photo"><div class="fold"></div>
+            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="120" height="160" fill="#e7e2da"/>
+              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
+              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
+              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
+              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
+              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
+              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
+            </svg>
+          </div>
+          <div class="photo"><div class="fold"></div>
+            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="120" height="160" fill="#e7e2da"/>
+              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
+              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
+              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
+              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
+              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
+              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
+            </svg>
+          </div>
+          <div class="photo"><div class="fold"></div>
+            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="120" height="160" fill="#e7e2da"/>
+              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
+              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
+              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
+              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
+              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
+              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="selfvideo">
+          <div class="frame">
+            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="120" height="160" fill="#cfd6de"/>
+              <rect x="0" y="0" width="120" height="70" fill="#e7e9ec"/>
+              <rect x="0" y="70" width="120" height="90" fill="#9aa2ac"/>
+              <ellipse cx="60" cy="122" rx="34" ry="40" fill="#4a5a52"/>
+              <circle cx="60" cy="66" r="24" fill="#1e1b18"/>
+              <ellipse cx="60" cy="76" rx="17" ry="19" fill="#c98e6b"/>
+              <path d="M60 92 q-22 8 -24 34 h48 q-2 -26 -24 -34z" fill="#4a5a52"/>
+            </svg>
+            <div class="kebab-dot">&hellip;</div>
+          </div>
+          <div class="callctrls">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg></button>
+            <button class="filled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="12" height="10" rx="2"/><path d="M15 10l6-3v10l-6-3z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v11H8l-4 4z"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="caption">
+        <p class="who">You</p>
+        <p class="txt">Ma&rsquo;am your company&rsquo;s name?</p>
+      </div>
+    </div>
+
+    <!-- RIGHT: step wizard -->
+    <div class="panel-right">
+      <div class="prevstep">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+        Previous step
+      </div>
+
+      <div class="stepper">
+        <div class="step-circle active">1</div>
+        <div class="step-line active"></div>
+        <div class="step-circle">2</div>
+        <div class="step-line"></div>
+        <div class="step-circle">3</div>
+        <div class="step-line"></div>
+        <div class="step-circle">4</div>
+        <div class="step-line"></div>
+        <div class="step-circle">5</div>
+        <div class="step-line"></div>
+        <div class="step-circle">6</div>
+        <div class="step-line"></div>
+        <div class="step-circle">7</div>
+        <div class="step-line"></div>
+        <div class="step-circle">8</div>
+        <div class="step-line"></div>
+        <div class="step-circle">9</div>
+      </div>
+
+      <div class="person-tabs">
+        <div class="person-pill selected"><span class="radio"></span>Ronith Nair</div>
+        <div class="person-pill"><span class="radio"></span>Ishaan Nair</div>
+      </div>
+
+      <h2 class="step-title">Selfie capture</h2>
+      <p class="step-sub">A one liner description of this step</p>
+
+      <div class="capture-box"></div>
+
+      <button class="capture-btn">Capture for both</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footerbar">
+    <div class="poweredby">
+      Powered by
+      <span class="word">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3v18"/><path d="M6 12h12"/><path d="M18 3v18"/></svg>
+        HYPERVERGE
+      </span>
+    </div>
+    <div class="footer-actions">
+      <button class="btn outline">End call</button>
+      <button class="btn filled">Next</button>
+    </div>
+  </div>
+
+</div>
