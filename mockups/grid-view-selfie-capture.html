@@ -767,6 +767,39 @@
 
   micBtn.addEventListener('click', toggleMic);
 
+  function startListening(){
+    if(scroll.querySelector('.cap-line.hint')) scroll.innerHTML = '';
+    listening = true; updateMicUI();
+    setHead('You', true);
+    try{ recognition.start(); }catch(err){}
+  }
+
+  function requestMicThenStart(){
+    // Explicitly prompt for microphone permission on the click gesture.
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream){
+          // Release the raw stream; SpeechRecognition captures its own mic.
+          stream.getTracks().forEach(function(t){ t.stop(); });
+          startListening();
+        })
+        .catch(function(err){
+          listening = false; updateMicUI(); setHead('You', false);
+          var name = err && err.name;
+          if(name === 'NotAllowedError' || name === 'SecurityError'){
+            showHint('Microphone permission denied. Allow mic access for this page, then click the mic again.');
+          }else if(name === 'NotFoundError' || name === 'DevicesNotFoundError'){
+            showHint('No microphone found. Connect a mic, then click the mic button again.');
+          }else{
+            showHint('Could not access the microphone. Open this file in Chrome over http(s)/localhost and allow the mic.');
+          }
+        });
+    }else{
+      // Insecure context / no mediaDevices API: let SpeechRecognition prompt.
+      startListening();
+    }
+  }
+
   function toggleMic(){
     if(!SR){
       showHint('Live captions need Chrome with microphone access. Open this file directly in Chrome.');
@@ -778,10 +811,7 @@
       recognition.stop();
       setHead('You', false);
     }else{
-      listening = true; updateMicUI();
-      if(scroll.querySelector('.cap-line.hint')) scroll.innerHTML = '';
-      setHead('You', true);
-      try{ recognition.start(); }catch(err){}
+      requestMicThenStart();
     }
   }
 
