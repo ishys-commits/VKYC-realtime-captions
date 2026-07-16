@@ -186,8 +186,18 @@
   }
   .callctrls button svg{width:17px;height:17px;}
   .callctrls button.plain{border-color:#c9cfdd;color:var(--ink-soft);}
+  .callctrls button.listening{
+    background:var(--teal);border-color:var(--teal);color:#fff;
+    box-shadow:0 0 0 0 rgba(18,138,151,.45);
+    animation:micpulse 1.6s ease-out infinite;
+  }
+  @keyframes micpulse{
+    0%{box-shadow:0 0 0 0 rgba(18,138,151,.45);}
+    70%{box-shadow:0 0 0 9px rgba(18,138,151,0);}
+    100%{box-shadow:0 0 0 0 rgba(18,138,151,0);}
+  }
 
-  /* ---- REGION 6 : caption bubble 390 x 67 ---- */
+  /* ---- REGION 6 : caption bubble 390 x 67 (live scrolling transcript) ---- */
   .caption{
     position:absolute;
     left:505px;
@@ -197,12 +207,41 @@
     background:#fff;
     border-radius:12px;
     box-shadow:0 6px 20px rgba(20,24,33,.16);
-    padding:11px 18px;
+    padding:9px 18px 8px;
     z-index:5;
+    display:flex;flex-direction:column;
+    overflow:hidden;
   }
-  .caption .who{font-size:13px;font-weight:700;color:var(--ink);margin:0 0 3px;}
-  .caption .txt{font-size:15px;color:var(--ink);margin:0;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cap-head{
+    display:flex;align-items:center;gap:6px;
+    font-size:13px;font-weight:700;color:var(--ink);
+    margin-bottom:2px;flex:0 0 auto;
+  }
+  .cap-head .dot{
+    width:7px;height:7px;border-radius:50%;background:#c9cfdd;flex:0 0 auto;
+  }
+  .cap-head.speaking{color:var(--teal);}
+  .cap-head.speaking .dot{background:#e5484d;animation:livedot 1s ease-in-out infinite;}
+  @keyframes livedot{0%,100%{opacity:1;}50%{opacity:.25;}}
+  .cap-scroll{
+    flex:1;min-height:0;
+    overflow:hidden;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0, #000 14px);
+    mask-image:linear-gradient(to bottom, transparent 0, #000 14px);
+  }
+  .cap-line{
+    font-size:15px;line-height:1.25;color:var(--ink);
+    margin:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    flex:0 0 auto;
+  }
+  .cap-line.interim{color:#9098a6;font-style:italic;}
+  .cap-line.hint{color:#9098a6;font-size:13px;font-style:normal;}
+  @media (prefers-reduced-motion:reduce){
+    .callctrls button.listening{animation:none;}
+    .cap-head.speaking .dot{animation:none;}
+  }
 
   /* ---- REGION 2 : right panel 717 x 699 ---- */
   .panel-right{
@@ -413,16 +452,18 @@
           <div class="kebab-dot">&hellip;</div>
         </div>
         <div class="callctrls">
-          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg></button>
+          <button id="micBtn" type="button" title="Start live captions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg></button>
           <button class="plain"></button>
           <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 20l1.9-4.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 20 11.5z"/></svg></button>
         </div>
       </div>
 
-      <!-- REGION 6: conversation caption -->
-      <div class="caption">
-        <p class="who">You</p>
-        <p class="txt">Ma&rsquo;am your company&rsquo;s name?</p>
+      <!-- REGION 6: live conversation caption -->
+      <div class="caption" id="caption">
+        <div class="cap-head" id="capHead"><span class="dot"></span>You</div>
+        <div class="cap-scroll" id="capScroll">
+          <p class="cap-line final">Ma&rsquo;am your company&rsquo;s name?</p>
+        </div>
       </div>
     </div>
 
@@ -485,3 +526,127 @@
   </div>
 
 </div>
+
+<script>
+(function(){
+  var micBtn  = document.getElementById('micBtn');
+  var head    = document.getElementById('capHead');
+  var scroll  = document.getElementById('capScroll');
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  // Keep only the last N finalized lines in the DOM so the box stays light.
+  var MAX_LINES = 15;
+
+  function scrollToLatest(){ scroll.scrollTop = scroll.scrollHeight; }
+
+  function showHint(text){
+    // Clear transcript and show a muted, non-erroring hint line.
+    scroll.innerHTML = '';
+    var p = document.createElement('p');
+    p.className = 'cap-line hint';
+    p.textContent = text;
+    p.style.whiteSpace = 'normal';
+    scroll.appendChild(p);
+    scrollToLatest();
+  }
+
+  // ---- No Web Speech API (e.g. non-Chrome / sandboxed iframe) ----
+  if(!SR){
+    micBtn.addEventListener('click', function(){
+      showHint('Live captions need Chrome with microphone access. Open this file directly in Chrome.');
+    });
+    return;
+  }
+
+  var recognition = new SR();
+  recognition.continuous     = true;
+  recognition.interimResults = true;
+  recognition.lang           = 'en-IN';
+
+  var listening = false;   // user intent (drives auto-restart)
+  var interimEl = null;    // the single live interim line
+
+  function setSpeaking(on){ head.classList.toggle('speaking', on); }
+
+  function addFinal(text){
+    text = text.trim();
+    if(!text) return;
+    var p = document.createElement('p');
+    p.className = 'cap-line final';
+    p.textContent = text;
+    // insert finalized text before the interim placeholder, if present
+    if(interimEl){ scroll.insertBefore(p, interimEl); }
+    else{ scroll.appendChild(p); }
+    // trim old lines
+    var finals = scroll.querySelectorAll('.cap-line.final');
+    for(var i = 0; i < finals.length - MAX_LINES; i++){ finals[i].remove(); }
+    scrollToLatest();
+  }
+
+  function setInterim(text){
+    text = text.trim();
+    if(!text){ if(interimEl){ interimEl.remove(); interimEl = null; } return; }
+    if(!interimEl){
+      interimEl = document.createElement('p');
+      interimEl.className = 'cap-line interim';
+      scroll.appendChild(interimEl);
+    }
+    interimEl.textContent = text;
+    scrollToLatest();
+  }
+
+  recognition.onresult = function(e){
+    var interim = '';
+    for(var i = e.resultIndex; i < e.results.length; i++){
+      var r = e.results[i];
+      if(r.isFinal){ addFinal(r[0].transcript); }
+      else{ interim += r[0].transcript; }
+    }
+    setInterim(interim);
+    setSpeaking(listening && (interim.length > 0));
+  };
+
+  recognition.onstart = function(){ setSpeaking(true); };
+
+  recognition.onerror = function(e){
+    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+      listening = false;
+      updateMicUI();
+      showHint('Microphone blocked. Allow mic access for this page, then click the mic again.');
+    }
+    // 'no-speech' / 'aborted' are transient; onend handles restart.
+  };
+
+  recognition.onend = function(){
+    // Chrome ends the session on silence; relaunch while the user wants it on.
+    if(listening){
+      try{ recognition.start(); }catch(err){ /* start() during teardown */ }
+    }else{
+      setSpeaking(false);
+    }
+  };
+
+  function updateMicUI(){
+    micBtn.classList.toggle('listening', listening);
+    micBtn.title = listening ? 'Stop live captions' : 'Start live captions';
+  }
+
+  micBtn.addEventListener('click', function(){
+    if(listening){
+      listening = false;
+      updateMicUI();
+      if(interimEl){ interimEl.remove(); interimEl = null; }
+      recognition.stop();
+      setSpeaking(false);
+    }else{
+      listening = true;
+      updateMicUI();
+      // Clear the idle placeholder on first real start.
+      if(scroll.querySelector('.cap-line.hint')) scroll.innerHTML = '';
+      try{ recognition.start(); }
+      catch(err){ /* already started */ }
+    }
+  });
+})();
+</script>
