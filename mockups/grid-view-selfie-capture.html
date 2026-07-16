@@ -1,39 +1,29 @@
-<title>Grid View For Selfie Capture</title>
+<title>Video PD Agent Dashboard</title>
 <style>
   :root{
     --teal:#128a97;
-    --teal-dark:#0e6e79;
-    --teal-tint:#e3f3f4;
     --ink:#20242c;
     --ink-soft:#5b6270;
     --line:#e2e5ec;
     --chrome-bg:#dbe4f7;
-    --page-bg:#f4f5f9;
-    --card-bg:#ffffff;
-    --gray-fill:#dfe1e6;
+    --page-bg:#f6f7fb;
+    --gray-fill:#ececef;
     --purple:#8b3fd1;
   }
   *{box-sizing:border-box;}
+  html,body{margin:0;}
   body{
-    margin:0;
-    background:#ffffff;
+    background:#c9cfdd;
     color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    padding:40px 32px 32px;
     overflow-x:auto;
   }
-  .caption-label{
-    color:#9aa0ac;
-    font-size:15px;
-    margin:0 0 14px 4px;
-  }
+
+  /* fixed 1440-wide browser canvas */
   .browser{
-    width:1920px;
+    width:1440px;
     margin:0 auto;
-    border:1px solid #c9cfdd;
-    border-radius:10px;
-    overflow:hidden;
-    box-shadow:0 1px 3px rgba(20,24,33,.08);
+    background:#fff;
   }
 
   /* ---------- Chrome tab strip ---------- */
@@ -42,270 +32,241 @@
     display:flex;
     align-items:flex-end;
     gap:2px;
-    height:58px;
+    height:48px;
     padding:0 10px;
   }
   .tab{
     display:flex;
     align-items:center;
     gap:8px;
-    height:40px;
+    height:38px;
     padding:0 14px;
     border-radius:9px 9px 0 0;
     font-size:13px;
     color:var(--ink-soft);
-    max-width:220px;
+    width:290px;
+    max-width:290px;
   }
-  .tab.active{
-    background:#ffffff;
-    color:var(--ink);
-    font-weight:500;
-  }
-  .tab .favicon{
-    width:15px;height:15px;flex:0 0 auto;color:var(--teal);
-  }
+  .tab.active{background:#ffffff;color:var(--ink);font-weight:500;}
+  .tab .favicon{width:15px;height:15px;flex:0 0 auto;color:var(--teal);}
   .tab .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .tab .close{margin-left:auto;color:#9aa0ac;font-size:14px;line-height:1;}
-  .newtab{
-    color:var(--ink-soft);
-    padding:8px 10px;
-    font-size:16px;
-    line-height:1;
-  }
+  .tab .close{margin-left:auto;color:#9aa0ac;font-size:15px;line-height:1;}
+  .newtab{color:var(--ink-soft);padding:8px 12px;font-size:18px;line-height:1;}
+  .tab-caret{margin-left:auto;color:#5b6270;padding:0 8px;font-size:13px;}
 
   /* ---------- Address bar ---------- */
   .addressbar{
     background:#ffffff;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    height:50px;
-    padding:0 14px;
+    display:flex;align-items:center;gap:12px;
+    height:52px;padding:0 16px;
     border-bottom:1px solid var(--line);
   }
-  .icon-btn{width:18px;height:18px;color:#6b7280;flex:0 0 auto;}
+  .icon-btn{width:18px;height:18px;color:#5f6673;flex:0 0 auto;}
   .icon-btn.dim{color:#c3c8d1;}
   .url-pill{
-    flex:1;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    height:32px;
-    background:#f1f3f7;
-    border-radius:20px;
-    padding:0 12px;
-    min-width:0;
+    flex:1;display:flex;align-items:center;gap:10px;
+    height:34px;background:#f1f3f7;border-radius:20px;padding:0 14px;min-width:0;
   }
-  .url-pill .lock{width:14px;height:14px;color:#6b7280;flex:0 0 auto;}
+  .url-pill .lock{width:15px;height:15px;color:#5f6673;flex:0 0 auto;}
   .url-pill .url-text{
-    font-size:13px;color:#3d4250;
+    font-size:14px;color:#3d4250;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
-  .addressbar .spacer-icons{display:flex;align-items:center;gap:14px;margin-left:6px;}
+  .spacer-icons{display:flex;align-items:center;gap:16px;margin-left:8px;}
   .paused-pill{
-    display:flex;align-items:center;gap:6px;
-    background:#f1f3f7;border-radius:20px;padding:4px 12px 4px 4px;
-    font-size:13px;color:#3d4250;font-weight:500;
+    display:flex;align-items:center;gap:7px;
+    background:#f1f3f7;border-radius:20px;padding:4px 14px 4px 4px;
+    font-size:14px;color:#3d4250;font-weight:500;
   }
   .avatar-r{
-    width:22px;height:22px;border-radius:50%;
+    width:24px;height:24px;border-radius:50%;
     background:var(--purple);color:#fff;
-    display:flex;align-items:center;justify-content:center;
-    font-size:11px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
   }
-  .chrome-update{font-size:13px;color:#3d4250;white-space:nowrap;}
-  .kebab{width:16px;height:16px;color:#6b7280;}
+  .chrome-update{font-size:14px;color:#3d4250;white-space:nowrap;}
+  .kebab{width:17px;height:17px;color:#5f6673;}
 
   /* ---------- App header ---------- */
   .appheader{
     background:#ffffff;
-    display:flex;align-items:center;gap:10px;
-    height:52px;
-    padding:0 20px;
+    display:flex;align-items:center;gap:12px;
+    height:52px;padding:0 22px;
     border-bottom:1px solid var(--line);
   }
   .grid-icon{width:20px;height:20px;color:#3d4250;}
+  .divider-v{width:1px;height:20px;background:#d5d9e2;}
+  .brand-h{width:20px;height:20px;color:var(--ink);}
   .brand{font-size:16px;font-weight:600;color:var(--ink);}
 
-  /* ---------- App body ---------- */
+  /* ---------- App body: two panels ---------- */
   .appbody{
+    position:relative;
+    display:flex;
+    width:1440px;
+    height:699px;
     background:var(--page-bg);
-    display:flex;
-    min-height:995px;
-  }
-  .panel-left{
-    flex:1 1 56%;
-    padding:22px 24px 18px;
-    display:flex;
-    flex-direction:column;
-    gap:16px;
-    min-width:0;
-  }
-  .panel-right{
-    flex:1 1 44%;
-    background:var(--page-bg);
-    padding:22px 32px 24px;
-    border-left:1px solid var(--line);
-    display:flex;
-    flex-direction:column;
   }
 
-  /* participants row */
+  /* ---- REGION 1 : left panel 718 x 699 ---- */
+  .panel-left{
+    position:relative;
+    width:718px;
+    height:699px;
+    flex:0 0 718px;
+    padding:40px 0 0 40px;
+  }
+
+  /* ---- REGION 4 : customer video card 431 x 610 ---- */
+  .videocard{
+    width:431px;
+    height:610px;
+    display:flex;
+    flex-direction:column;
+  }
   .participants{
     display:flex;align-items:center;gap:14px;
+    height:34px;
+    margin-bottom:18px;
   }
-  .participants .names{font-size:15px;font-weight:600;color:var(--ink);}
+  .participants .names{font-size:16px;font-weight:600;color:var(--ink);}
   .signal-pill{
-    display:flex;align-items:center;gap:5px;
-    background:#fff;border:1px solid var(--line);border-radius:16px;
-    padding:4px 10px;font-size:13px;color:var(--ink-soft);font-weight:600;
+    display:flex;align-items:center;gap:6px;margin-left:auto;
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:5px 10px;font-size:14px;color:var(--ink);font-weight:600;
   }
-  .signal-pill svg{width:15px;height:15px;color:#2fa84f;}
+  .signal-pill svg{width:16px;height:16px;color:#2fa84f;}
   .menu-pill{
-    background:#fff;border:1px solid var(--line);border-radius:16px;
-    width:30px;height:28px;display:flex;align-items:center;justify-content:center;
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    width:34px;height:30px;display:flex;align-items:center;justify-content:center;
     color:var(--ink-soft);
   }
 
-  /* stage: grid + self video */
-  .stage{position:relative;flex:1;}
-  .photo-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:14px;
-    max-width:560px;
-  }
-  .photo{
+  /* customer photo grid: 2 top + 3 bottom */
+  .grid-row{display:flex;gap:14px;}
+  .grid-row1{height:300px;}
+  .grid-row2{height:196px;margin-top:14px;}
+  .grid-row1 .ptile{width:208px;height:100%;}
+  .grid-row2 .ptile{width:134px;height:100%;}
+  .ptile{
     position:relative;
-    aspect-ratio:3/4;
-    border-radius:6px;
-    overflow:hidden;
-    background:#fff;
-    box-shadow:0 2px 6px rgba(20,24,33,.12);
-    border:1px solid #e9ebf0;
+    border-radius:8px;overflow:hidden;background:#fff;
+    box-shadow:0 2px 7px rgba(20,24,33,.13);
+    border:1px solid #eceef2;
   }
-  .photo:nth-child(odd){transform:rotate(-1.6deg);}
-  .photo:nth-child(even){transform:rotate(1.4deg);}
-  .photo .fold{
-    position:absolute;top:0;right:0;
-    width:0;height:0;
-    border-style:solid;
-    border-width:0 16px 16px 0;
+  .ptile .fold{
+    position:absolute;top:0;right:0;z-index:2;
+    width:0;height:0;border-style:solid;border-width:0 16px 16px 0;
     border-color:transparent #ffffff transparent transparent;
-    filter:drop-shadow(-1px 1px 1px rgba(0,0,0,.15));
+    filter:drop-shadow(-1px 1px 1px rgba(0,0,0,.14));
   }
-  .selfvideo{
+
+  /* ---- REGION 5 : agent video tile 192 x 183 ---- */
+  .agenttile{
     position:absolute;
-    top:0;right:24px;
-    width:190px;
+    top:92px;
+    left:505px;
+    width:192px;
   }
-  .selfvideo .frame{
-    width:100%;aspect-ratio:3/4;
-    border-radius:8px;overflow:hidden;
-    position:relative;
-    box-shadow:0 3px 10px rgba(20,24,33,.18);
+  .agenttile .frame{
+    width:192px;height:135px;
+    border-radius:10px;overflow:hidden;position:relative;
+    box-shadow:0 3px 12px rgba(20,24,33,.20);
   }
-  .selfvideo .kebab-dot{
+  .agenttile .kebab-dot{
     position:absolute;top:8px;left:8px;
-    width:22px;height:22px;border-radius:50%;
+    width:24px;height:24px;border-radius:50%;
     background:var(--teal);color:#fff;
-    display:flex;align-items:center;justify-content:center;
-    font-size:14px;letter-spacing:1px;
+    display:flex;align-items:center;justify-content:center;font-size:15px;letter-spacing:1px;
   }
-  .callctrls{
-    display:flex;justify-content:center;gap:10px;margin-top:10px;
-  }
+  .callctrls{display:flex;justify-content:center;gap:12px;margin-top:12px;}
   .callctrls button{
-    width:34px;height:34px;border-radius:50%;
+    width:36px;height:36px;border-radius:50%;
     border:1.5px solid var(--teal);background:#fff;color:var(--teal);
-    display:flex;align-items:center;justify-content:center;
-    cursor:default;
+    display:flex;align-items:center;justify-content:center;cursor:default;
   }
-  .callctrls button svg{width:16px;height:16px;}
-  .callctrls button.filled{background:#fff;border-color:#c9cfdd;color:var(--ink-soft);}
+  .callctrls button svg{width:17px;height:17px;}
+  .callctrls button.plain{border-color:#c9cfdd;color:var(--ink-soft);}
 
-  /* caption bubble */
+  /* ---- REGION 6 : caption bubble 390 x 67 ---- */
   .caption{
-    position:relative;
-    align-self:flex-start;
-    margin-left:38%;
-    max-width:340px;
+    position:absolute;
+    left:505px;
+    bottom:-33px;
+    width:390px;
+    height:67px;
     background:#fff;
-    border-radius:10px;
-    box-shadow:0 4px 16px rgba(20,24,33,.14);
-    padding:12px 16px;
+    border-radius:12px;
+    box-shadow:0 6px 20px rgba(20,24,33,.16);
+    padding:11px 18px;
+    z-index:5;
   }
-  .caption .who{font-size:13px;font-weight:700;color:var(--ink);margin:0 0 2px;}
-  .caption .txt{font-size:14px;color:var(--ink);margin:0;}
+  .caption .who{font-size:13px;font-weight:700;color:var(--ink);margin:0 0 3px;}
+  .caption .txt{font-size:15px;color:var(--ink);margin:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-  /* footer */
-  .footerbar{
+  /* ---- REGION 2 : right panel 717 x 699 ---- */
+  .panel-right{
+    width:722px;
+    height:699px;
+    flex:1 1 auto;
     background:var(--page-bg);
-    border-top:1px solid var(--line);
-    display:flex;align-items:center;justify-content:space-between;
-    padding:16px 24px;
+    border-left:1px solid var(--line);
+    padding:36px 40px 30px;
+    display:flex;flex-direction:column;
   }
-  .poweredby{display:flex;align-items:center;gap:6px;font-size:12px;color:#9aa0ac;}
-  .poweredby .word{display:flex;align-items:center;gap:5px;color:#3d4250;font-weight:600;font-size:13px;}
-  .poweredby .word svg{width:14px;height:14px;color:var(--teal);}
-  .footer-actions{display:flex;gap:12px;}
-  .btn{
-    border-radius:8px;padding:12px 24px;font-size:14px;font-weight:600;
-    border:1.5px solid var(--teal);cursor:default;
-    text-align:center;
-  }
-  .btn.outline{background:#fff;color:var(--teal);min-width:110px;}
-  .btn.filled{background:var(--teal);color:#fff;min-width:90px;}
-
-  /* right panel content */
   .prevstep{
-    display:flex;align-items:center;gap:4px;
-    color:var(--teal);font-size:13px;font-weight:600;
-    margin-bottom:18px;
-  }
-  .prevstep svg{width:14px;height:14px;}
-  .stepper{
-    display:flex;align-items:center;
-    margin-bottom:22px;
-  }
-  .step-circle{
-    width:30px;height:30px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    font-size:13px;font-weight:600;
-    border:1.5px solid #c9cfdd;color:var(--ink-soft);background:#fff;
-    flex:0 0 auto;
-  }
-  .step-circle.active{background:var(--teal);border-color:var(--teal);color:#fff;}
-  .step-line{flex:1;height:1.5px;background:#c9cfdd;min-width:16px;}
-  .step-line.active{background:var(--teal);}
-  .person-tabs{display:flex;gap:12px;margin-bottom:26px;}
-  .person-pill{
-    display:flex;align-items:center;gap:8px;
-    height:40px;
-    border-radius:8px;padding:0 18px;font-size:14px;
-    border:1.5px solid #c9cfdd;color:var(--ink-soft);
-  }
-  .person-pill.selected{border-color:var(--teal);color:var(--teal);font-weight:600;}
-  .radio{width:14px;height:14px;border-radius:50%;border:1.5px solid currentColor;flex:0 0 auto;}
-  .person-pill.selected .radio{border-width:4px;}
-  .step-title{font-size:22px;font-weight:700;margin:0 0 6px;color:var(--ink);}
-  .step-sub{font-size:14px;color:var(--ink-soft);margin:0 0 22px;}
-  .capture-box{
-    flex:1;
-    min-height:300px;
-    background:var(--gray-fill);
-    border-radius:10px;
+    display:flex;align-items:center;gap:6px;
+    color:var(--teal);font-size:15px;font-weight:600;
     margin-bottom:26px;
   }
+  .prevstep svg{width:16px;height:16px;}
+  .stepper{display:flex;align-items:center;margin-bottom:30px;}
+  .step-circle{
+    width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:600;
+    border:1.5px solid #c9cfdd;color:var(--ink-soft);background:#fff;flex:0 0 auto;
+  }
+  .step-circle.active{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .step-line{flex:1;height:1.5px;background:#c9cfdd;}
+  .step-line.active{background:var(--teal);}
+  .person-tabs{display:flex;gap:14px;margin-bottom:30px;}
+  .person-pill{
+    display:flex;align-items:center;gap:9px;
+    height:44px;border-radius:10px;padding:0 20px;font-size:15px;
+    border:1.5px solid #c9cfdd;color:var(--ink-soft);background:#fff;
+  }
+  .person-pill.selected{border-color:var(--teal);color:var(--teal);font-weight:600;background:#f2fafb;}
+  .radio{width:16px;height:16px;border-radius:50%;border:1.5px solid currentColor;flex:0 0 auto;}
+  .person-pill.selected .radio{border-width:5px;}
+  .step-title{font-size:24px;font-weight:700;margin:0 0 8px;color:var(--ink);}
+  .step-sub{font-size:15px;color:var(--ink-soft);margin:0 0 26px;}
+  .capture-box{flex:1;min-height:0;background:var(--gray-fill);border-radius:12px;margin-bottom:26px;}
   .capture-btn{
     align-self:center;
     background:var(--teal);color:#fff;border:none;
-    border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600;
-    cursor:default;
+    border-radius:8px;padding:13px 30px;font-size:15px;font-weight:600;cursor:default;
   }
-</style>
 
-<p class="caption-label">Grid View For Selfie Capture</p>
+  /* ---- REGION 3 : footer 1440 x 82 ---- */
+  .footerbar{
+    width:1440px;height:82px;
+    background:#ffffff;
+    border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 30px;
+  }
+  .poweredby{display:flex;align-items:center;gap:8px;font-size:13px;color:#7b8290;}
+  .poweredby .word{display:flex;align-items:center;gap:6px;color:#1c2540;font-weight:700;font-size:15px;}
+  .poweredby .word svg{width:16px;height:16px;color:var(--ink);}
+  .footer-actions{display:flex;gap:14px;}
+  .btn{
+    height:48px;border-radius:8px;padding:0 30px;font-size:15px;font-weight:600;
+    border:1.5px solid var(--teal);cursor:default;display:flex;align-items:center;justify-content:center;
+  }
+  .btn.outline{background:#fff;color:var(--teal);}
+  .btn.filled{background:var(--teal);color:#fff;}
+</style>
 
 <div class="browser">
 
@@ -322,6 +283,7 @@
       <span class="close">&times;</span>
     </div>
     <div class="newtab">+</div>
+    <div class="tab-caret">&#9662;</div>
   </div>
 
   <!-- Address bar -->
@@ -339,7 +301,6 @@
       <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.7 1.6 6.8L12 17l-6.2 3.5 1.6-6.8L2.2 9l6.9-.7z"/></svg>
       <span style="color:#c9cfdd;">|</span>
       <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-3l-2-3H9L7 7H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
-      <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <svg class="icon-btn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
       <div class="paused-pill">
         <span class="avatar-r">R</span>
@@ -353,110 +314,119 @@
   <!-- App header -->
   <div class="appheader">
     <svg class="grid-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="divider-v"></span>
+    <svg class="brand-h" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 3v18"/><path d="M6 12h12"/><path d="M18 3v18"/></svg>
     <span class="brand">Hyperverge</span>
   </div>
 
   <!-- App body -->
   <div class="appbody">
 
-    <!-- LEFT: call stage -->
+    <!-- REGION 1: left panel -->
     <div class="panel-left">
-      <div class="participants">
-        <span class="names">Ronith Nair, Rishab Burman &amp; 2 more</span>
-        <div class="signal-pill">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 18v-3"/><path d="M9 18v-6"/><path d="M14 18v-9"/><path d="M19 18V6"/></svg>
-          5
-        </div>
-        <div class="menu-pill">&hellip;</div>
-      </div>
 
-      <div class="stage">
-        <div class="photo-grid">
-          <div class="photo"><div class="fold"></div>
-            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
-              <rect width="120" height="160" fill="#e7e2da"/>
-              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
-              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
-              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
-              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
-              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
-              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
+      <!-- REGION 4: customer video card -->
+      <div class="videocard">
+        <div class="participants">
+          <span class="names">Ronith Nair, Rishab Burman &amp; 2 more</span>
+          <div class="signal-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 18v-3"/><path d="M9 18v-6"/><path d="M14 18v-9"/><path d="M19 18V6"/></svg>
+            5
+          </div>
+          <div class="menu-pill">&hellip;</div>
+        </div>
+
+        <div class="grid-row grid-row1">
+          <div class="ptile"><div class="fold"></div>
+            <svg viewBox="0 0 208 300" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="208" height="300" fill="#e9e5dd"/>
+              <rect x="120" y="0" width="6" height="300" fill="#dad4c9"/>
+              <rect x="0" y="185" width="208" height="115" fill="#2b2f36"/>
+              <ellipse cx="104" cy="230" rx="58" ry="70" fill="#2b2f36"/>
+              <circle cx="104" cy="140" r="42" fill="#34261c"/>
+              <ellipse cx="104" cy="158" rx="30" ry="34" fill="#c98e6b"/>
+              <path d="M104 188 q-40 12 -44 60 h88 q-4 -48 -44 -60z" fill="#d9713f"/>
             </svg>
           </div>
-          <div class="photo"><div class="fold"></div>
-            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
-              <rect width="120" height="160" fill="#e7e2da"/>
-              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
-              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
-              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
-              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
-              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
-              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
-            </svg>
-          </div>
-          <div class="photo"><div class="fold"></div>
-            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
-              <rect width="120" height="160" fill="#e7e2da"/>
-              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
-              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
-              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
-              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
-              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
-              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
-            </svg>
-          </div>
-          <div class="photo"><div class="fold"></div>
-            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
-              <rect width="120" height="160" fill="#e7e2da"/>
-              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
-              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
-              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
-              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
-              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
-              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
-            </svg>
-          </div>
-          <div class="photo"><div class="fold"></div>
-            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
-              <rect width="120" height="160" fill="#e7e2da"/>
-              <rect x="70" y="0" width="4" height="160" fill="#d8d2c7"/>
-              <rect x="0" y="95" width="120" height="65" fill="#2b2f36"/>
-              <ellipse cx="60" cy="118" rx="30" ry="34" fill="#2b2f36"/>
-              <circle cx="60" cy="72" r="22" fill="#3a2a20"/>
-              <ellipse cx="60" cy="80" rx="16" ry="18" fill="#c98e6b"/>
-              <path d="M60 95 q-20 6 -22 30 h44 q-2 -24 -22 -30z" fill="#d9713f"/>
+          <div class="ptile"><div class="fold"></div>
+            <svg viewBox="0 0 208 300" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="208" height="300" fill="#e9e5dd"/>
+              <rect x="120" y="0" width="6" height="300" fill="#dad4c9"/>
+              <rect x="0" y="185" width="208" height="115" fill="#2b2f36"/>
+              <ellipse cx="104" cy="230" rx="58" ry="70" fill="#2b2f36"/>
+              <circle cx="104" cy="140" r="42" fill="#34261c"/>
+              <ellipse cx="104" cy="158" rx="30" ry="34" fill="#c98e6b"/>
+              <path d="M104 188 q-40 12 -44 60 h88 q-4 -48 -44 -60z" fill="#d9713f"/>
             </svg>
           </div>
         </div>
 
-        <div class="selfvideo">
-          <div class="frame">
-            <svg viewBox="0 0 120 160" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
-              <rect width="120" height="160" fill="#cfd6de"/>
-              <rect x="0" y="0" width="120" height="70" fill="#e7e9ec"/>
-              <rect x="0" y="70" width="120" height="90" fill="#9aa2ac"/>
-              <ellipse cx="60" cy="122" rx="34" ry="40" fill="#4a5a52"/>
-              <circle cx="60" cy="66" r="24" fill="#1e1b18"/>
-              <ellipse cx="60" cy="76" rx="17" ry="19" fill="#c98e6b"/>
-              <path d="M60 92 q-22 8 -24 34 h48 q-2 -26 -24 -34z" fill="#4a5a52"/>
+        <div class="grid-row grid-row2">
+          <div class="ptile"><div class="fold"></div>
+            <svg viewBox="0 0 134 196" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="134" height="196" fill="#e9e5dd"/>
+              <rect x="78" y="0" width="4" height="196" fill="#dad4c9"/>
+              <rect x="0" y="120" width="134" height="76" fill="#2b2f36"/>
+              <ellipse cx="67" cy="150" rx="37" ry="46" fill="#2b2f36"/>
+              <circle cx="67" cy="90" r="27" fill="#34261c"/>
+              <ellipse cx="67" cy="102" rx="19" ry="22" fill="#c98e6b"/>
+              <path d="M67 122 q-26 8 -28 40 h56 q-2 -32 -28 -40z" fill="#d9713f"/>
             </svg>
-            <div class="kebab-dot">&hellip;</div>
           </div>
-          <div class="callctrls">
-            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg></button>
-            <button class="filled"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="12" height="10" rx="2"/><path d="M15 10l6-3v10l-6-3z"/></svg></button>
-            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v11H8l-4 4z"/></svg></button>
+          <div class="ptile"><div class="fold"></div>
+            <svg viewBox="0 0 134 196" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="134" height="196" fill="#e9e5dd"/>
+              <rect x="78" y="0" width="4" height="196" fill="#dad4c9"/>
+              <rect x="0" y="120" width="134" height="76" fill="#2b2f36"/>
+              <ellipse cx="67" cy="150" rx="37" ry="46" fill="#2b2f36"/>
+              <circle cx="67" cy="90" r="27" fill="#34261c"/>
+              <ellipse cx="67" cy="102" rx="19" ry="22" fill="#c98e6b"/>
+              <path d="M67 122 q-26 8 -28 40 h56 q-2 -32 -28 -40z" fill="#d9713f"/>
+            </svg>
+          </div>
+          <div class="ptile"><div class="fold"></div>
+            <svg viewBox="0 0 134 196" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+              <rect width="134" height="196" fill="#e9e5dd"/>
+              <rect x="78" y="0" width="4" height="196" fill="#dad4c9"/>
+              <rect x="0" y="120" width="134" height="76" fill="#2b2f36"/>
+              <ellipse cx="67" cy="150" rx="37" ry="46" fill="#2b2f36"/>
+              <circle cx="67" cy="90" r="27" fill="#34261c"/>
+              <ellipse cx="67" cy="102" rx="19" ry="22" fill="#c98e6b"/>
+              <path d="M67 122 q-26 8 -28 40 h56 q-2 -32 -28 -40z" fill="#d9713f"/>
+            </svg>
           </div>
         </div>
       </div>
 
+      <!-- REGION 5: agent video tile -->
+      <div class="agenttile">
+        <div class="frame">
+          <svg viewBox="0 0 192 135" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+            <rect width="192" height="135" fill="#c9d0d8"/>
+            <rect x="0" y="0" width="192" height="60" fill="#e4e7ea"/>
+            <rect x="0" y="60" width="192" height="75" fill="#a7aeb8"/>
+            <ellipse cx="96" cy="118" rx="46" ry="40" fill="#3f5049"/>
+            <circle cx="96" cy="58" r="30" fill="#1e1b18"/>
+            <ellipse cx="96" cy="70" rx="21" ry="24" fill="#c98e6b"/>
+            <path d="M96 92 q-30 6 -32 43 h64 q-2 -37 -32 -43z" fill="#3f5049"/>
+          </svg>
+          <div class="kebab-dot">&hellip;</div>
+        </div>
+        <div class="callctrls">
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 19v3"/></svg></button>
+          <button class="plain"></button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 20l1.9-4.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 0 1 12.5 3 8.38 8.38 0 0 1 20 11.5z"/></svg></button>
+        </div>
+      </div>
+
+      <!-- REGION 6: conversation caption -->
       <div class="caption">
         <p class="who">You</p>
         <p class="txt">Ma&rsquo;am your company&rsquo;s name?</p>
       </div>
     </div>
 
-    <!-- RIGHT: step wizard -->
+    <!-- REGION 2: right panel -->
     <div class="panel-right">
       <div class="prevstep">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
@@ -495,9 +465,11 @@
 
       <button class="capture-btn">Capture for both</button>
     </div>
+
+    <!-- REGION 6 lives in left panel (see .caption) -->
   </div>
 
-  <!-- Footer -->
+  <!-- REGION 3: footer -->
   <div class="footerbar">
     <div class="poweredby">
       Powered by
