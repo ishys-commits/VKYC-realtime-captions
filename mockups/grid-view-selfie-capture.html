@@ -673,155 +673,78 @@
     });
   });
 
-  function speakCustomer(i){
-    var c = CUSTOMERS[i], tile = tiles[i];
-    if(!c || !tile) return;
-
+  // Shared reveal: stream a line word-by-word, then finalize it, highlighting
+  // `highlightEl` (a customer tile or the agent tile) while it "speaks".
+  function speakLine(name, line, highlightEl){
     // Cancel any in-flight reveal so triggers don't overlap.
     if(wozTimer){ clearInterval(wozTimer); wozTimer = null; }
     if(wozClearTimer){ clearTimeout(wozClearTimer); wozClearTimer = null; }
     clearInterim();
-
     if(scroll.querySelector('.cap-line.hint')) scroll.innerHTML = '';
-
-    var line = c.lines[tile.nextLine % c.lines.length];
-    tile.nextLine++;
 
     // Highlight this speaker (and only this speaker).
     clearAllTileSpeaking();
     agentTile.classList.remove('speaking');
-    tile.classList.add('speaking');
-    setHead(c.name, true);
+    highlightEl.classList.add('speaking');
+    setHead(name, true);
 
-    if(reduceMotion){
-      addFinal(c.name, line);
-      finishWoz(tile);
-      return;
+    function finish(){
+      wozClearTimer = setTimeout(function(){
+        highlightEl.classList.remove('speaking');
+        // keep the speaker's name in the head, just drop the live "speaking" dot
+        head.classList.remove('speaking');
+      }, 1200);
     }
 
-    var words = line.split(' ');
-    var shown = 0;
+    if(reduceMotion){ addFinal(name, line); finish(); return; }
+
+    var words = line.split(' '), shown = 0;
     wozTimer = setInterval(function(){
       shown++;
-      setInterim(c.name, words.slice(0, shown).join(' '));
+      setInterim(name, words.slice(0, shown).join(' '));
       if(shown >= words.length){
         clearInterval(wozTimer); wozTimer = null;
         clearInterim();
-        addFinal(c.name, line);
-        finishWoz(tile);
+        addFinal(name, line);
+        finish();
       }
     }, REVEAL_MS);
   }
 
-  function finishWoz(tile){
-    wozClearTimer = setTimeout(function(){
-      tile.classList.remove('speaking');
-      // keep the speaker's name in the head, just drop the live "speaking" dot
-      head.classList.remove('speaking');
-    }, 1200);
+  function speakCustomer(i){
+    var c = CUSTOMERS[i], tile = tiles[i];
+    if(!c || !tile) return;
+    var line = c.lines[tile.nextLine % c.lines.length];
+    tile.nextLine++;
+    speakLine(c.name, line, tile);
   }
 
-  // ================= Live agent captions (Web Speech API) =================
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  var recognition = null, listening = false;
+  // ================= Dummy agent captions (press "S" or click the mic) =======
+  // No microphone / Web Speech API: the operator triggers the agent's line.
+  var AGENT = { nextLine: 0, lines: [
+    "Good afternoon, I'm calling from Hyperverge for your video KYC.",
+    "Ma'am, your company's name?",
+    "Please hold your PAN card near the camera.",
+    "Thank you, that's verified.",
+    "We're almost done — just one last step."
+  ]};
 
-  function updateMicUI(){
-    micBtn.classList.toggle('listening', listening);
-    agentTile.classList.toggle('speaking', listening);
-    micBtn.title = listening ? 'Stop live captions' : 'Start live captions';
+  function speakAgent(){
+    var line = AGENT.lines[AGENT.nextLine % AGENT.lines.length];
+    AGENT.nextLine++;
+    speakLine('You', line, agentTile);
   }
 
-  if(SR){
-    recognition = new SR();
-    recognition.continuous     = true;
-    recognition.interimResults = true;
-    recognition.lang           = 'en-IN';
+  micBtn.title = 'Speak (press S)';
+  micBtn.addEventListener('click', speakAgent);
 
-    recognition.onresult = function(e){
-      var interim = '';
-      for(var i = e.resultIndex; i < e.results.length; i++){
-        var r = e.results[i];
-        if(r.isFinal){ addFinal('You', r[0].transcript); }
-        else{ interim += r[0].transcript; }
-      }
-      // The agent is speaking: reflect it on the head + agent tile.
-      clearAllTileSpeaking();
-      setHead('You', true);
-      agentTile.classList.add('speaking');
-      setInterim('You', interim);
-    };
-
-    recognition.onerror = function(e){
-      if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
-        listening = false; updateMicUI();
-        showHint('Microphone blocked. Allow mic access for this page, then click the mic again.');
-      }
-      // 'no-speech' / 'aborted' are transient; onend handles restart.
-    };
-
-    recognition.onend = function(){
-      if(listening){ try{ recognition.start(); }catch(err){} }
-      else{ setHead('You', false); }
-    };
-  }
-
-  micBtn.addEventListener('click', toggleMic);
-
-  function startListening(){
-    if(scroll.querySelector('.cap-line.hint')) scroll.innerHTML = '';
-    listening = true; updateMicUI();
-    setHead('You', true);
-    try{ recognition.start(); }catch(err){}
-  }
-
-  function requestMicThenStart(){
-    // Explicitly prompt for microphone permission on the click gesture.
-    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(function(stream){
-          // Release the raw stream; SpeechRecognition captures its own mic.
-          stream.getTracks().forEach(function(t){ t.stop(); });
-          startListening();
-        })
-        .catch(function(err){
-          listening = false; updateMicUI(); setHead('You', false);
-          var name = err && err.name;
-          if(name === 'NotAllowedError' || name === 'SecurityError'){
-            showHint('Microphone permission denied. Allow mic access for this page, then click the mic again.');
-          }else if(name === 'NotFoundError' || name === 'DevicesNotFoundError'){
-            showHint('No microphone found. Connect a mic, then click the mic button again.');
-          }else{
-            showHint('Could not access the microphone. Open this file in Chrome over http(s)/localhost and allow the mic.');
-          }
-        });
-    }else{
-      // Insecure context / no mediaDevices API: let SpeechRecognition prompt.
-      startListening();
-    }
-  }
-
-  function toggleMic(){
-    if(!SR){
-      showHint('Live captions need Chrome with microphone access. Open this file directly in Chrome.');
-      return;
-    }
-    if(listening){
-      listening = false; updateMicUI();
-      clearInterim();
-      recognition.stop();
-      setHead('You', false);
-    }else{
-      requestMicThenStart();
-    }
-  }
-
-  // ================= Operator hotkeys: 1-5 customers, m = mic =================
+  // ================= Operator hotkeys: 1-5 customers, S = agent ==============
   document.addEventListener('keydown', function(e){
     if(e.metaKey || e.ctrlKey || e.altKey) return;
     var tag = (e.target && e.target.tagName) || '';
     if(tag === 'INPUT' || tag === 'TEXTAREA') return;
     if(e.key >= '1' && e.key <= '5'){ speakCustomer(parseInt(e.key,10) - 1); }
-    else if(e.key === 'm' || e.key === 'M'){ toggleMic(); }
+    else if(e.key === 's' || e.key === 'S'){ e.preventDefault(); speakAgent(); }
   });
 })();
 </script>
