@@ -1,0 +1,1212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pre-VKYC Instruction Screen — Interaction Concepts</title>
+<meta name="description" content="Six live, interaction-first redesigns of the pre-Video KYC readiness screen.">
+</head>
+<body>
+<style>
+  /* ---------- Reset (kept minimal; Artifact injects one too) ---------- */
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0}
+
+  /* ---------- Tokens ---------- */
+  :root{
+    --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+
+    /* gallery shell — light */
+    --bg:#F5F6FB;
+    --bg-2:#EEF0F8;
+    --surface:#FFFFFF;
+    --ink:#1B2130;
+    --slate:#5A6274;
+    --mute:#8B93A6;
+    --line:#E6E8F0;
+    --accent:#4F46E5;
+    --accent-soft:#EEF0FF;
+
+    /* product / phone (device screen — constant across themes) */
+    --p-indigo:#4F46E5;
+    --p-indigo-press:#453FCF;
+    --p-indigo-050:#EEF0FF;
+    --p-indigo-100:#E1E3FF;
+    --p-purple:#9B27C4;
+    --p-ink:#1C2230;
+    --p-slate:#5B6473;
+    --p-mute:#98A0AE;
+    --p-line:#E7E9EF;
+    --p-card:#F3F4F7;
+    --p-card-2:#EDEFF4;
+    --p-white:#FFFFFF;
+    --p-green:#16A34A;
+    --p-green-050:#E9F7EF;
+    --p-amber:#B7791F;
+    --p-red:#DA5257;
+    --p-red-050:#FCECEC;
+    --p-lav-1:#EAE6FB;
+    --p-lav-2:#D9D5F3;
+
+    --r-sm:8px; --r-md:12px; --r-lg:18px; --r-xl:26px;
+    --shadow-1:0 1px 2px rgba(20,24,40,.06),0 6px 20px rgba(20,24,40,.06);
+    --shadow-2:0 10px 40px rgba(28,34,60,.14);
+    --maxw:1180px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0D0F16; --bg-2:#12141E; --surface:#161A26; --ink:#ECEEF5;
+      --slate:#A7AEC0; --mute:#79808F;
+      --line:#252A3A; --accent:#8B84FF; --accent-soft:#1D2140;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0D0F16; --bg-2:#12141E; --surface:#161A26; --ink:#ECEEF5;
+    --slate:#A7AEC0; --mute:#79808F; --line:#252A3A; --accent:#8B84FF; --accent-soft:#1D2140;
+  }
+  :root[data-theme="light"]{
+    --bg:#F5F6FB; --bg-2:#EEF0F8; --surface:#FFFFFF; --ink:#1B2130;
+    --slate:#5A6274; --mute:#8B93A6; --line:#E6E8F0; --accent:#4F46E5; --accent-soft:#EEF0FF;
+  }
+
+  /* ---------- Page shell ---------- */
+  .page{
+    font-family:var(--font);
+    background:
+      radial-gradient(1100px 520px at 82% -8%, color-mix(in srgb,var(--accent) 12%, transparent), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    padding:0 20px 90px;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto}
+
+  a{color:inherit}
+  h1,h2,h3,h4,p{margin:0}
+
+  /* ---------- Masthead ---------- */
+  .mast{padding:54px 0 12px;max-width:820px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:9px;
+    font-size:12px;font-weight:650;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);
+    background:var(--accent-soft);
+    border:1px solid color-mix(in srgb,var(--accent) 22%, transparent);
+    padding:6px 12px;border-radius:100px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .mast h1{
+    font-size:clamp(30px,4.6vw,50px);line-height:1.04;letter-spacing:-.022em;
+    font-weight:760;margin:20px 0 0;text-wrap:balance;
+  }
+  .mast .lede{
+    margin-top:16px;font-size:clamp(15px,1.7vw,18px);line-height:1.62;color:var(--slate);
+    max-width:64ch;
+  }
+
+  /* ---------- Stat strip ---------- */
+  .stats{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:34px 0 6px;
+  }
+  .stat{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+    padding:18px 18px 16px;box-shadow:var(--shadow-1);position:relative;overflow:hidden;
+  }
+  .stat .k{font-size:clamp(22px,3vw,30px);font-weight:740;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .stat .l{margin-top:5px;font-size:12.5px;color:var(--slate);line-height:1.4}
+  .stat.bad .k{color:var(--p-red)}
+  .stat.warn .k{color:var(--p-amber)}
+  .stat .spark{position:absolute;right:14px;top:14px;font-size:11px;font-weight:650;color:var(--mute)}
+
+  /* ---------- Principles ---------- */
+  .principles{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0 8px;
+  }
+  .principle{
+    border:1px solid var(--line);border-radius:var(--r-md);padding:15px 16px;background:var(--bg-2);
+  }
+  .principle .n{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  .principle .t{margin-top:7px;font-weight:640;font-size:14.5px}
+  .principle .d{margin-top:5px;font-size:12.5px;color:var(--slate);line-height:1.5}
+
+  .sectlabel{
+    display:flex;align-items:center;gap:14px;margin:64px 0 8px;
+  }
+  .sectlabel h2{font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);white-space:nowrap}
+  .sectlabel .rule{height:1px;background:var(--line);flex:1}
+
+  /* ---------- Concept block ---------- */
+  .concept{
+    display:grid;grid-template-columns:340px 1fr;gap:44px;align-items:start;
+    padding:40px 0;border-top:1px solid var(--line);
+  }
+  .concept:first-of-type{border-top:none}
+  .concept.flip .stage{order:2}
+  .concept.flip .info{order:1}
+
+  .stage{position:sticky;top:24px;display:flex;justify-content:center}
+
+  .info .cnum{
+    font-size:13px;font-weight:700;letter-spacing:.14em;color:var(--accent);font-variant-numeric:tabular-nums;
+  }
+  .info h3{font-size:clamp(21px,2.5vw,27px);line-height:1.12;letter-spacing:-.018em;font-weight:720;margin-top:8px;text-wrap:balance}
+  .info .thesis{margin-top:11px;font-size:15px;line-height:1.6;color:var(--slate);max-width:60ch}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:15px}
+  .tag{
+    font-size:11.5px;font-weight:600;color:var(--slate);
+    background:var(--bg-2);border:1px solid var(--line);border-radius:100px;padding:5px 11px;
+  }
+  .tag.primary{color:var(--accent);background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 24%,transparent)}
+
+  .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:2px 30px;margin-top:24px}
+  .rrow{padding:13px 0;border-top:1px dashed var(--line)}
+  .rrow .rk{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:7px}
+  .rrow .rk .ic{width:15px;height:15px;flex:none;color:var(--accent)}
+  .rrow .rv{margin-top:6px;font-size:13.5px;line-height:1.55;color:var(--ink)}
+  .rrow.up .rk{color:var(--p-green)} .rrow.up .rk .ic{color:var(--p-green)}
+  .rrow.tradeoff .rk{color:var(--p-amber)} .rrow.tradeoff .rk .ic{color:var(--p-amber)}
+  .rrow.full{grid-column:1/-1}
+
+  /* ---------- Phone device ---------- */
+  .phone{
+    width:300px;height:622px;flex:none;position:relative;
+    background:#0A0C11;border-radius:42px;padding:11px;
+    box-shadow:var(--shadow-2), 0 0 0 2px #23262F inset;
+  }
+  .phone .screen{
+    position:relative;width:100%;height:100%;background:var(--p-white);border-radius:32px;overflow:hidden;
+    color:var(--p-ink);font-size:14px;
+  }
+  .notch{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:120px;height:23px;background:#0A0C11;border-radius:0 0 15px 15px;z-index:40;
+  }
+  .statusbar{
+    position:relative;height:40px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 20px;font-size:13px;font-weight:640;color:var(--p-ink);z-index:30;
+  }
+  .statusbar .sig{display:flex;align-items:center;gap:5px}
+  .statusbar .sig svg{display:block}
+
+  .app{position:absolute;inset:40px 0 0;display:flex;flex-direction:column;overflow:hidden}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 18px 4px}
+  .lang{
+    display:inline-flex;align-items:center;gap:7px;background:var(--p-card);border-radius:9px;
+    padding:8px 11px;font-size:12.5px;font-weight:600;color:var(--p-ink);
+  }
+  .lang svg{opacity:.55}
+  .xbtn{
+    width:32px;height:32px;border-radius:50%;background:var(--p-card);border:none;color:var(--p-slate);
+    display:grid;place-items:center;cursor:pointer;
+  }
+  .body{flex:1;overflow:hidden;padding:8px 18px 0;display:flex;flex-direction:column;min-height:0}
+  .scrollarea{flex:1;overflow-y:auto;min-height:0;scrollbar-width:none}
+  .scrollarea::-webkit-scrollbar{display:none}
+
+  .h-title{font-size:23px;font-weight:730;letter-spacing:-.01em;color:var(--p-ink)}
+  .h-sub{margin-top:8px;font-size:13px;line-height:1.5;color:var(--p-slate)}
+
+  /* generic product buttons */
+  .btn{
+    width:100%;border:none;border-radius:13px;padding:15px;font-size:15px;font-weight:660;font-family:inherit;
+    cursor:pointer;transition:transform .12s ease, background .18s ease, box-shadow .18s ease, opacity .18s ease;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--p-indigo);color:#fff;box-shadow:0 8px 18px rgba(79,70,229,.28)}
+  .btn-primary:hover{background:var(--p-indigo-press)}
+  .btn-primary[disabled]{background:#C7CAD6;color:#fff;box-shadow:none;cursor:not-allowed}
+  .btn-ghost{background:transparent;color:var(--p-indigo);border:1.5px solid var(--p-indigo)}
+  .btn-soft{background:var(--p-indigo-050);color:var(--p-indigo);border:1px solid var(--p-indigo-100)}
+  .btn-quiet{background:transparent;color:var(--p-slate);font-weight:600;border:none}
+
+  .footer-cta{padding:10px 18px 14px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(to top,var(--p-white) 72%, transparent)}
+  .powered{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;color:var(--p-mute);font-weight:600;padding-top:2px}
+  .powered svg{color:var(--p-green)}
+  .homebar{width:120px;height:5px;border-radius:100px;background:#1c2230;opacity:.85;margin:6px auto 8px}
+
+  .terms{display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--p-mute);line-height:1.45;padding:2px 2px 0}
+  .terms a{color:var(--p-indigo);font-weight:600;text-decoration:none}
+  .cbx{width:18px;height:18px;border-radius:5px;background:var(--p-indigo);flex:none;display:grid;place-items:center;margin-top:1px}
+
+  /* instruction rows (baseline look) */
+  .irow{
+    display:flex;align-items:center;gap:12px;background:var(--p-card);border-radius:13px;padding:14px;margin-top:10px;
+  }
+  .irow .ico{width:34px;height:34px;border-radius:9px;background:var(--p-white);display:grid;place-items:center;flex:none;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .irow .txt{font-size:13.5px;font-weight:560;color:var(--p-ink)}
+
+  /* PAN card art */
+  .pan{
+    position:relative;border-radius:14px;padding:14px;overflow:hidden;
+    background:linear-gradient(135deg,var(--p-lav-1),var(--p-lav-2));
+  }
+  .pancard{
+    background:linear-gradient(135deg,#D9D3F4,#CFC8EF);border-radius:9px;padding:11px;position:relative;
+    box-shadow:0 6px 16px rgba(63,55,140,.18);
+  }
+  .pan-head{display:flex;justify-content:space-between;font-size:7px;font-weight:700;color:#3d3766;letter-spacing:.02em}
+  .pan-mid{display:flex;gap:9px;margin-top:8px;align-items:flex-start}
+  .pan-photo{width:34px;height:40px;border-radius:4px;background:#b9b1e0;flex:none;display:grid;place-items:center}
+  .pan-lines{flex:1;display:flex;flex-direction:column;gap:5px;margin-top:3px}
+  .pan-lines i{height:5px;border-radius:3px;background:#b3abda;display:block}
+  .pan-qr{width:36px;height:36px;border-radius:4px;background:
+    repeating-conic-gradient(#2a2550 0% 25%, #fff 0% 50%) 0 0/8px 8px;flex:none}
+  .pan-no{margin-top:9px;font-size:9px;font-weight:800;letter-spacing:.18em;color:#3d3766}
+  .pan-badge{
+    position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;
+    background:var(--p-purple);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px;
+    box-shadow:0 4px 10px rgba(155,39,196,.4);
+  }
+  .pan-caption{text-align:center;font-size:13px;font-weight:560;color:var(--p-ink);background:var(--p-card);border-radius:0 0 13px 13px;padding:12px;margin-top:-2px}
+
+  /* pill / chip */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:650;border-radius:100px;padding:5px 10px}
+  .chip-green{background:var(--p-green-050);color:var(--p-green)}
+  .chip-red{background:var(--p-red-050);color:var(--p-red)}
+  .chip-indigo{background:var(--p-indigo-050);color:var(--p-indigo)}
+
+  .tickbadge{width:20px;height:20px;border-radius:50%;background:var(--p-green);display:grid;place-items:center;flex:none}
+  .xbadge{width:20px;height:20px;border-radius:50%;background:var(--p-red);display:grid;place-items:center;flex:none}
+
+  /* progress dots */
+  .pdots{display:flex;gap:6px;justify-content:center;padding:4px 0 2px}
+  .pdots i{width:7px;height:7px;border-radius:100px;background:var(--p-line);transition:all .3s ease}
+  .pdots i.on{background:var(--p-indigo);width:20px}
+  .pdots i.done{background:var(--p-green)}
+
+  /* demo replay control */
+  .replay{
+    position:absolute;bottom:-38px;left:50%;transform:translateX(-50%);
+    display:inline-flex;align-items:center;gap:7px;font-family:var(--font);
+    font-size:12px;font-weight:600;color:var(--slate);background:var(--surface);
+    border:1px solid var(--line);border-radius:100px;padding:7px 14px;cursor:pointer;white-space:nowrap;
+    box-shadow:var(--shadow-1);
+  }
+  .replay:hover{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+  .replay svg{transition:transform .5s ease}
+  .replay:hover svg{transform:rotate(-180deg)}
+
+  /* ===================================================================
+     Concept-specific
+  ==================================================================== */
+
+  /* C1 — guided self-check */
+  .sc-item{
+    border:1.5px solid var(--p-line);border-radius:14px;margin-top:10px;overflow:hidden;
+    transition:border-color .3s ease, background .3s ease, opacity .35s ease, transform .35s ease;
+  }
+  .sc-item.locked{opacity:.45;transform:scale(.985);pointer-events:none}
+  .sc-item.active{border-color:var(--p-indigo);box-shadow:0 6px 18px rgba(79,70,229,.14)}
+  .sc-item.done{border-color:var(--p-green);background:var(--p-green-050)}
+  .sc-head{display:flex;align-items:center;gap:11px;padding:13px 13px}
+  .sc-ico{width:36px;height:36px;border-radius:10px;background:var(--p-card);display:grid;place-items:center;flex:none}
+  .sc-item.done .sc-ico{background:#fff}
+  .sc-t{font-size:14px;font-weight:640;color:var(--p-ink)}
+  .sc-s{font-size:11.5px;color:var(--p-slate);margin-top:1px}
+  .sc-state{margin-left:auto;flex:none}
+  .sc-expand{max-height:0;opacity:0;transition:max-height .38s ease,opacity .28s ease;padding:0 13px}
+  .sc-item.active .sc-expand{max-height:120px;opacity:1;padding-bottom:13px}
+  .sc-actions{display:flex;gap:9px}
+  .sc-actions .btn{padding:11px;font-size:13px;border-radius:11px}
+  .mini-yes{background:var(--p-indigo);color:#fff}
+  .mini-no{background:var(--p-card);color:var(--p-slate)}
+
+  .resched-panel{
+    margin-top:12px;border-radius:14px;padding:14px;background:var(--p-indigo-050);
+    border:1px solid var(--p-indigo-100);opacity:0;max-height:0;overflow:hidden;transition:all .4s ease;
+  }
+  .resched-panel.show{opacity:1;max-height:220px}
+  .resched-panel .rp-t{font-size:14px;font-weight:680;color:var(--p-ink)}
+  .resched-panel .rp-s{font-size:12px;color:var(--p-slate);margin-top:4px;line-height:1.5}
+
+  /* C2 — original vs copy */
+  .oc-wrap{position:relative;margin-top:14px}
+  .oc-decoys{display:flex;gap:9px;justify-content:center;margin-bottom:12px}
+  .oc-decoy{
+    position:relative;width:78px;height:60px;border-radius:10px;background:var(--p-card);
+    border:1.5px solid var(--p-line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    transition:all .5s cubic-bezier(.4,0,.2,1);
+  }
+  .oc-decoy .lab{font-size:9.5px;font-weight:600;color:var(--p-slate);text-align:center;line-height:1.2}
+  .oc-decoy .stamp{
+    position:absolute;inset:0;display:grid;place-items:center;opacity:0;transition:opacity .3s ease .25s;
+  }
+  .oc-decoy .stamp .xbadge{width:26px;height:26px}
+  .oc-reject .oc-decoy{filter:grayscale(1);opacity:.35;transform:translateY(10px) scale(.9)}
+  .oc-reject .oc-decoy .stamp{opacity:1}
+  .oc-hero{
+    transition:all .55s cubic-bezier(.34,1.3,.5,1);transform:scale(.97);
+  }
+  .oc-reveal .oc-hero{transform:scale(1.02)}
+  .oc-reveal .oc-hero .pancard{box-shadow:0 0 0 3px var(--p-indigo), 0 12px 30px rgba(79,70,229,.4)}
+  .oc-orig-badge{
+    display:flex;align-items:center;justify-content:center;gap:7px;margin-top:12px;opacity:0;transform:translateY(6px);
+    transition:all .4s ease .35s;
+  }
+  .oc-reveal .oc-orig-badge{opacity:1;transform:none}
+
+  /* C3 — swipe deck */
+  .deck{position:relative;margin-top:10px;overflow:hidden;border-radius:16px}
+  .deck-track{display:flex;transition:transform .42s cubic-bezier(.4,0,.2,1)}
+  .deck-card{
+    flex:0 0 100%;min-height:296px;border-radius:16px;padding:18px;
+    display:flex;flex-direction:column;
+  }
+  .dc-1{background:linear-gradient(160deg,#EFE9FF,#E4DEFB)}
+  .dc-2{background:var(--p-card)}
+  .dc-3{background:var(--p-card)}
+  .dc-sum{background:var(--p-green-050)}
+  .deck-card .dc-tag{align-self:flex-start}
+  .deck-card .dc-h{font-size:19px;font-weight:720;margin-top:14px;color:var(--p-ink);letter-spacing:-.01em}
+  .deck-card .dc-p{font-size:13px;color:var(--p-slate);margin-top:8px;line-height:1.55}
+  .deck-art{flex:1;display:grid;place-items:center;margin:12px 0}
+  .deck-nav{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+  .deck-arrow{width:38px;height:38px;border-radius:50%;background:var(--p-card);border:none;display:grid;place-items:center;cursor:pointer;color:var(--p-ink)}
+  .deck-arrow[disabled]{opacity:.35;cursor:not-allowed}
+
+  /* C4 — smart gate toggles */
+  .gate-row{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid var(--p-line)}
+  .gate-row .g-ico{width:34px;height:34px;border-radius:9px;background:var(--p-card);display:grid;place-items:center;flex:none}
+  .gate-row .g-q{font-size:13.5px;font-weight:580;color:var(--p-ink);flex:1;line-height:1.3}
+  .seg{display:flex;background:var(--p-card);border-radius:9px;padding:3px;flex:none}
+  .seg button{
+    border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:640;color:var(--p-slate);
+    padding:7px 12px;border-radius:7px;cursor:pointer;transition:all .18s ease;
+  }
+  .seg button.yes.on{background:var(--p-green);color:#fff}
+  .seg button.no.on{background:#fff;color:var(--p-red);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .gate-hint{font-size:12px;color:var(--p-slate);text-align:center;padding:10px 0 2px;transition:color .2s}
+
+  /* C5 — ambient spotlight */
+  .spot{position:relative}
+  .spot .halo{
+    position:absolute;inset:-6px;border-radius:20px;
+    background:radial-gradient(circle at 50% 45%, rgba(79,70,229,.22), transparent 62%);
+    animation:halo 2.6s ease-in-out infinite;
+  }
+  @keyframes halo{0%,100%{opacity:.55;transform:scale(.98)}50%{opacity:1;transform:scale(1.02)}}
+  .orig-tag{
+    position:absolute;top:8px;left:8px;z-index:3;
+    background:var(--p-green);color:#fff;font-size:10px;font-weight:750;letter-spacing:.03em;
+    padding:5px 9px;border-radius:100px;display:inline-flex;align-items:center;gap:5px;
+    box-shadow:0 4px 10px rgba(22,163,74,.35);
+  }
+  .cycler{height:34px;position:relative;overflow:hidden;margin-top:12px}
+  .cyc-item{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;
+    font-size:13.5px;font-weight:620;color:var(--p-ink);
+    opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .45s ease;
+  }
+  .cyc-item.on{opacity:1;transform:none}
+  .cyc-item .xbadge{width:18px;height:18px}
+
+  /* C6 — reschedule forward */
+  .rf-seg{display:flex;background:var(--p-card);border-radius:12px;padding:4px;margin-top:14px}
+  .rf-seg button{
+    flex:1;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:650;color:var(--p-slate);
+    padding:11px;border-radius:9px;cursor:pointer;transition:all .2s ease;display:flex;flex-direction:column;align-items:center;gap:3px;
+  }
+  .rf-seg button small{font-size:10.5px;font-weight:500;opacity:.8}
+  .rf-seg button.on{background:#fff;color:var(--p-indigo);box-shadow:0 2px 8px rgba(28,34,60,.1)}
+  .rf-panel{margin-top:14px;border-radius:14px;padding:16px;border:1px solid var(--p-line);transition:all .3s ease}
+  .rf-panel.ready{background:var(--p-indigo-050);border-color:var(--p-indigo-100)}
+  .rf-panel.later{background:var(--p-green-050);border-color:#CBEBD6}
+  .rf-panel .rf-h{font-size:15px;font-weight:700;color:var(--p-ink)}
+  .rf-panel .rf-list{margin:10px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+  .rf-panel .rf-list li{display:flex;gap:8px;font-size:12.5px;color:var(--p-slate);line-height:1.4;align-items:flex-start}
+
+  /* ---------- footer ---------- */
+  .foot{margin-top:70px;border-top:1px solid var(--line);padding-top:24px;color:var(--mute);font-size:13px;line-height:1.6;max-width:70ch}
+  .foot b{color:var(--slate);font-weight:640}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--slate)}
+  .legend .sw{width:12px;height:12px;border-radius:4px}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    .stats{grid-template-columns:1fr 1fr}
+    .principles{grid-template-columns:1fr 1fr}
+    .concept{grid-template-columns:1fr;gap:30px}
+    .concept.flip .stage{order:0}
+    .concept.flip .info{order:0}
+    .stage{position:static;margin-bottom:14px}
+    .rgrid{grid-template-columns:1fr}
+    .replay{position:static;transform:none;margin:16px auto 0;display:inline-flex}
+    .stage{flex-direction:column;align-items:center}
+  }
+  @media (max-width:420px){
+    .stats{grid-template-columns:1fr}
+    .principles{grid-template-columns:1fr}
+    .page{padding:0 14px 60px}
+    .phone{width:280px;height:582px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+    .spot .halo{animation:none;opacity:.7}
+  }
+</style>
+
+<div class="page">
+<div class="wrap">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="mast">
+    <span class="eyebrow"><span class="dot"></span>Video KYC · Pre-call readiness · Mobile web</span>
+    <h1>Get users ready before the call — or reschedule them, before an agent has to.</h1>
+    <p class="lede">
+      Six interaction-first redesigns of the pre-VKYC instruction screen. Each keeps the HyperVerge
+      visual system but replaces a static list with lightweight motion and micro-confirmations — so the
+      <b>original PAN card</b> requirement actually registers, and users who aren't ready choose to
+      reschedule instead of burning a call. Every phone below is <b>live</b>; tap through it.
+    </p>
+  </header>
+
+  <!-- ============ STATS ============ -->
+  <section class="stats" aria-label="Current funnel">
+    <div class="stat">
+      <div class="k">34,000</div>
+      <div class="l">users reach this screen</div>
+    </div>
+    <div class="stat warn">
+      <div class="k">2,278</div>
+      <div class="l">choose “Schedule for later” — just <b>~6.7%</b></div>
+      <div class="spark">6.7%</div>
+    </div>
+    <div class="stat bad">
+      <div class="k">#1</div>
+      <div class="l">failure cause: no <b>original</b> PAN (copy / screenshot / absent)</div>
+    </div>
+    <div class="stat bad">
+      <div class="k">#2</div>
+      <div class="l">no pen &amp; white paper on hand</div>
+    </div>
+  </section>
+
+  <!-- ============ PRINCIPLES ============ -->
+  <section class="principles" aria-label="Design principles">
+    <div class="principle">
+      <div class="n">Goal 01</div>
+      <div class="t">Make it register</div>
+      <div class="d">Motion &amp; micro-confirmation beat a static list — users notice and remember what to bring.</div>
+    </div>
+    <div class="principle">
+      <div class="n">Goal 02</div>
+      <div class="t">Original PAN, unmistakably</div>
+      <div class="d">Elevate “original only — no copy, no screenshot” without fear language.</div>
+    </div>
+    <div class="principle">
+      <div class="n">Goal 03</div>
+      <div class="t">Reschedule = smart</div>
+      <div class="d">Reframe from an escape hatch to “hold your slot” — the intelligent move when unready.</div>
+    </div>
+    <div class="principle">
+      <div class="n">Goal 04</div>
+      <div class="t">Seconds, not a chore</div>
+      <div class="d">Every interaction resolves in a few taps; ambient options add zero friction.</div>
+    </div>
+  </section>
+
+  <div class="sectlabel"><h2>Six concepts</h2><div class="rule"></div></div>
+
+
+  <!-- ==================================================================
+       CONCEPT 1 — GUIDED SELF-CHECK
+  =================================================================== -->
+  <section class="concept" id="c1">
+    <div class="stage">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar">
+            <span>9:41</span>
+            <span class="sig">
+              <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+              <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 2.3c2.2 0 4.2.8 5.7 2.2l1.1-1.2A10 10 0 0 0 8 .5 10 10 0 0 0 1.2 3.3l1.1 1.2A8.3 8.3 0 0 1 8 2.3Z"/><path d="M8 6c1.2 0 2.3.45 3.1 1.2l1.1-1.2A6.4 6.4 0 0 0 8 4.2c-1.6 0-3.1.6-4.2 1.8l1.1 1.2A4.7 4.7 0 0 1 8 6Z"/><circle cx="8" cy="9.2" r="1.6"/></svg>
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.2" fill="currentColor"/><rect x="22" y="4" width="1.6" height="4" rx="1" fill="currentColor" opacity=".5"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="topbar">
+              <span class="lang"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18A14 14 0 0 1 12 3Z" stroke="currentColor" stroke-width="2"/></svg> English
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+              <button class="xbtn" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="body">
+              <div class="pdots" id="c1-dots"><i class="on"></i><i></i><i></i></div>
+              <div class="h-title" style="font-size:20px;margin-top:6px">Quick readiness check</div>
+              <div class="h-sub">Confirm each item — it takes 10 seconds.</div>
+              <div class="scrollarea" style="margin-top:6px">
+
+                <div class="sc-item active" data-idx="0">
+                  <div class="sc-head">
+                    <span class="sc-ico">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" stroke="#4F46E5" stroke-width="1.8"/><circle cx="8" cy="11" r="1.6" fill="#4F46E5"/><path d="M13 10h5M13 13h5M6 15h6" stroke="#4F46E5" stroke-width="1.6" stroke-linecap="round"/></svg>
+                    </span>
+                    <div><div class="sc-t">Your <u>original</u> PAN card</div><div class="sc-s">Physical card — not a copy or screenshot</div></div>
+                    <span class="sc-state"></span>
+                  </div>
+                  <div class="sc-expand">
+                    <div class="sc-actions">
+                      <button class="btn mini-yes" data-a="yes">I have it with me</button>
+                      <button class="btn mini-no" data-a="no">Not now</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sc-item locked" data-idx="1">
+                  <div class="sc-head">
+                    <span class="sc-ico">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-9 9H5v-6l9-9Z" stroke="#4F46E5" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                    </span>
+                    <div><div class="sc-t">A pen &amp; white paper</div><div class="sc-s">For a quick on-camera signature</div></div>
+                    <span class="sc-state"></span>
+                  </div>
+                  <div class="sc-expand">
+                    <div class="sc-actions">
+                      <button class="btn mini-yes" data-a="yes">Ready</button>
+                      <button class="btn mini-no" data-a="no">Not now</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sc-item locked" data-idx="2">
+                  <div class="sc-head">
+                    <span class="sc-ico">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 8.5a14 14 0 0 1 20 0M5 12a9 9 0 0 1 14 0M8 15.5a4 4 0 0 1 8 0" stroke="#4F46E5" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="19" r="1.4" fill="#4F46E5"/></svg>
+                    </span>
+                    <div><div class="sc-t">Stable internet</div><div class="sc-s">Wi-Fi or strong mobile signal</div></div>
+                    <span class="sc-state"></span>
+                  </div>
+                  <div class="sc-expand">
+                    <div class="sc-actions">
+                      <button class="btn mini-yes" data-a="yes">Good to go</button>
+                      <button class="btn mini-no" data-a="no">Not now</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="resched-panel" id="c1-resched">
+                  <div class="rp-t">No problem — let’s hold your slot</div>
+                  <div class="rp-s">Grab your original PAN and come back. We’ll keep a priority slot and text you the link.</div>
+                  <button class="btn btn-primary" style="margin-top:11px;padding:12px">Reschedule — keep my slot</button>
+                </div>
+              </div>
+            </div>
+            <div class="footer-cta">
+              <button class="btn btn-primary" id="c1-start" disabled>Confirm all items to start</button>
+              <div class="homebar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" data-replay="c1"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Replay</button>
+    </div>
+
+    <div class="info">
+      <div class="cnum">CONCEPT 01</div>
+      <h3>Guided Self-Check</h3>
+      <p class="thesis">A gated checklist that reveals one item at a time. The user actively taps “I have it” for each — a tiny commitment that converts passive reading into recall. “Start” stays locked until all three are confirmed; any “Not now” slides open a warm reschedule offer.</p>
+      <div class="tags"><span class="tag primary">Preparedness</span><span class="tag primary">Reschedule</span><span class="tag">Progressive disclosure</span></div>
+
+      <div class="rgrid">
+        <div class="rrow full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Interaction</div><div class="rv">Tap-to-confirm, one card at a time. The active card is highlighted; upcoming cards are dimmed &amp; locked. The primary CTA is disabled with the honest label “Confirm all items to start.”</div></div>
+        <div class="rrow"><div class="rk">Animation</div><div class="rv">Confirmed card collapses to a green ticked row; the next slides up &amp; brightens. Progress dots fill (indigo→green).</div></div>
+        <div class="rrow"><div class="rk">Layout</div><div class="rv">Same rows, same PAN-first order — now stateful. Adds a 3-dot progress bar and an inline reschedule panel.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Preparedness ↑</div><div class="rv">Active confirmation (“I have it”) forces a real mental check per item vs. skimming a list.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Reschedule ↑</div><div class="rv">“Not now” is a first-class answer, not a corner link — it opens a positive “hold your slot” path in-context.</div></div>
+        <div class="rrow tradeoff full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Trade-offs</div><div class="rv">Adds ~3 taps and a gate — motivated, ready users feel mild friction. Mitigate by keeping copy tight and animations &lt;300ms. A/B the hard gate vs. a soft nudge (allow start but warn).</div></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ==================================================================
+       CONCEPT 2 — ORIGINAL vs COPY
+  =================================================================== -->
+  <section class="concept flip" id="c2">
+    <div class="stage">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span>
+            <span class="sig">
+              <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+              <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 2.3c2.2 0 4.2.8 5.7 2.2l1.1-1.2A10 10 0 0 0 8 .5 10 10 0 0 0 1.2 3.3l1.1 1.2A8.3 8.3 0 0 1 8 2.3Z"/><circle cx="8" cy="9.2" r="1.6"/></svg>
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.2" fill="currentColor"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="topbar">
+              <span class="lang"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18A14 14 0 0 1 12 3Z" stroke="currentColor" stroke-width="2"/></svg> English
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+              <button class="xbtn" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="body">
+              <div class="h-title" style="font-size:21px">Bring the <span style="color:var(--p-indigo)">original</span> PAN</div>
+              <div class="h-sub">Only the physical card works on the call.</div>
+              <div class="scrollarea" style="margin-top:10px">
+                <div class="oc-wrap" id="c2-wrap">
+                  <div class="oc-decoys">
+                    <div class="oc-decoy"><div class="lab">Photocopy</div><div class="stamp"><span class="xbadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></span></div></div>
+                    <div class="oc-decoy"><div class="lab">Screenshot</div><div class="stamp"><span class="xbadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></span></div></div>
+                    <div class="oc-decoy"><div class="lab">Digital&nbsp;image</div><div class="stamp"><span class="xbadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></span></div></div>
+                  </div>
+                  <div class="oc-hero">
+                    <div class="pan">
+                      <span class="pan-badge">I</span>
+                      <div class="pancard">
+                        <div class="pan-head"><span>INCOME TAX DEPT</span><span>GOVT. OF INDIA</span></div>
+                        <div class="pan-mid">
+                          <div class="pan-photo"><svg width="18" height="18" viewBox="0 0 24 24" fill="#8f86c4"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0Z"/></svg></div>
+                          <div class="pan-lines"><i style="width:80%"></i><i style="width:60%"></i><i style="width:70%"></i></div>
+                          <div class="pan-qr"></div>
+                        </div>
+                        <div class="pan-no">ABCDE ●●●● E</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="oc-orig-badge">
+                    <span class="chip chip-green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#16A34A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Original card — this is the one</span>
+                  </div>
+                </div>
+
+                <div class="irow" style="margin-top:16px"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-9 9H5v-6l9-9Z" stroke="#4F46E5" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span class="txt">Pen &amp; white paper</span></div>
+                <div class="irow"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 8.5a14 14 0 0 1 20 0M8 15.5a4 4 0 0 1 8 0" stroke="#4F46E5" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="19" r="1.3" fill="#4F46E5"/></svg></span><span class="txt">Stable internet</span></div>
+              </div>
+            </div>
+            <div class="footer-cta">
+              <div class="terms"><span class="cbx"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>By continuing, you agree to our <a>terms</a> of use, and <a>Privacy policy</a></span></div>
+              <button class="btn btn-primary">Start Video KYC</button>
+              <button class="btn btn-quiet" style="padding:6px">Missing your PAN? Reschedule</button>
+              <div class="homebar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" data-replay="c2"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Replay</button>
+    </div>
+
+    <div class="info">
+      <div class="cnum">CONCEPT 02</div>
+      <h3>Original vs. Copy — the elimination</h3>
+      <p class="thesis">A 1.2-second animation that does the teaching. Three tempting shortcuts — <b>photocopy, screenshot, digital image</b> — appear, get an ✗ stamp, desaturate and fall away, while the real card scales up with an indigo glow and a green “this is the one.” It shows what <i>not</i> to bring without a single warning sentence.</p>
+      <div class="tags"><span class="tag primary">Original PAN</span><span class="tag">Motion hierarchy</span><span class="tag">Micro-animation</span></div>
+
+      <div class="rgrid">
+        <div class="rrow full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Interaction</div><div class="rv">Auto-plays once when the screen scrolls into view (and on “Replay”). No taps required — it’s an ambient reveal, so it never blocks the ready user.</div></div>
+        <div class="rrow"><div class="rk">Animation</div><div class="rv">Decoys: ✗ stamp → grayscale → drop &amp; fade. Hero: spring scale-up + indigo ring glow, then the green badge rises in.</div></div>
+        <div class="rrow"><div class="rk">Layout</div><div class="rv">PAN block gets a decoy row above it; title itself carries “original.” Pen/paper &amp; internet demote to compact rows.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Preparedness ↑</div><div class="rv">Naming the exact wrong cases (copy/screenshot/image) pre-empts the top-3 real failure modes visually.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Reschedule ↑</div><div class="rv">A calm “Missing your PAN? Reschedule” sits right under Start — targeted at the exact person who just realized they only have a copy.</div></div>
+        <div class="rrow tradeoff full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Trade-offs</div><div class="rv">Motion is decorative, not a gate — a distracted user can still miss it. Pairs well with Concept 1’s confirm gate. Respect <code>prefers-reduced-motion</code> (falls back to the end-state).</div></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ==================================================================
+       CONCEPT 3 — SWIPE DECK
+  =================================================================== -->
+  <section class="concept" id="c3">
+    <div class="stage">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span>
+            <span class="sig">
+              <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.2" fill="currentColor"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="topbar">
+              <span class="lang"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18" stroke="currentColor" stroke-width="2"/></svg> English</span>
+              <button class="xbtn" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="body">
+              <div class="h-title" style="font-size:19px">3 things to have ready</div>
+              <div class="pdots" id="c3-dots" style="justify-content:flex-start;padding-top:8px"><i class="on"></i><i></i><i></i><i></i></div>
+
+              <div class="deck" id="c3-deck">
+                <div class="deck-track">
+                  <!-- card 1: PAN -->
+                  <div class="deck-card dc-1">
+                    <span class="chip chip-indigo dc-tag">Most important</span>
+                    <div class="deck-art">
+                      <div class="pan" style="width:100%">
+                        <span class="pan-badge">I</span>
+                        <div class="pancard">
+                          <div class="pan-head"><span>INCOME TAX DEPT</span><span>GOVT. OF INDIA</span></div>
+                          <div class="pan-mid"><div class="pan-photo"><svg width="16" height="16" viewBox="0 0 24 24" fill="#8f86c4"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0Z"/></svg></div><div class="pan-lines"><i style="width:80%"></i><i style="width:60%"></i></div><div class="pan-qr"></div></div>
+                          <div class="pan-no">ABCDE ●●●● E</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="dc-h">Your original PAN card</div>
+                    <div class="dc-p">The real, physical card. A photocopy, screenshot or digital image won’t pass verification.</div>
+                  </div>
+                  <!-- card 2 -->
+                  <div class="deck-card dc-2">
+                    <span class="chip chip-indigo dc-tag">Keep handy</span>
+                    <div class="deck-art"><svg width="76" height="76" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="12" height="16" rx="1.5" stroke="#4F46E5" stroke-width="1.5"/><path d="M17 5l3 3-7 7-3 .7.7-3 6.3-7Z" stroke="#4F46E5" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                    <div class="dc-h">A pen &amp; white paper</div>
+                    <div class="dc-p">You’ll write and sign briefly on camera. Any blank white sheet works.</div>
+                  </div>
+                  <!-- card 3 -->
+                  <div class="deck-card dc-3">
+                    <span class="chip chip-indigo dc-tag">Check now</span>
+                    <div class="deck-art"><svg width="80" height="80" viewBox="0 0 24 24" fill="none"><path d="M2 8.5a14 14 0 0 1 20 0M5 12a9 9 0 0 1 14 0M8 15.5a4 4 0 0 1 8 0" stroke="#4F46E5" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="19" r="1.6" fill="#4F46E5"/></svg></div>
+                    <div class="dc-h">Stable internet</div>
+                    <div class="dc-p">Wi-Fi or a strong mobile signal keeps the call from dropping.</div>
+                  </div>
+                  <!-- card 4: summary -->
+                  <div class="deck-card dc-sum">
+                    <span class="chip chip-green dc-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#16A34A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg> You’ve seen it all</span>
+                    <div class="dc-h" style="margin-top:16px">Ready with your original PAN?</div>
+                    <div class="dc-p">Start now if everything’s in hand. If your PAN isn’t with you, hold your slot for later.</div>
+                    <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px">
+                      <button class="btn btn-primary" style="padding:13px">Yes — Start Video KYC</button>
+                      <button class="btn btn-soft" style="padding:13px">Not yet — hold my slot</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="deck-nav">
+                <button class="deck-arrow" id="c3-prev" disabled aria-label="Previous"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <span style="font-size:12px;color:var(--p-mute);font-weight:600" id="c3-count">Swipe to review · 1 / 4</span>
+                <button class="deck-arrow" id="c3-next" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              </div>
+            </div>
+            <div class="footer-cta" style="padding-top:4px"><div class="homebar"></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" data-replay="c3"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Reset deck</button>
+    </div>
+
+    <div class="info">
+      <div class="cnum">CONCEPT 03</div>
+      <h3>Readiness Cards — swipe to review</h3>
+      <p class="thesis">The list becomes a short swipeable deck: one requirement per card, PAN first and biggest. Because each item owns the full screen for a moment, it can’t be skimmed past. The final card is a decision, not a button-race — “Start” and “hold my slot” presented as two equal choices.</p>
+      <div class="tags"><span class="tag primary">Preparedness</span><span class="tag primary">Reschedule</span><span class="tag">Swipe cards</span></div>
+
+      <div class="rgrid">
+        <div class="rrow full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Interaction</div><div class="rv">Swipe (or arrow/dot tap) through 3 requirement cards → 1 decision card. Progress dots + “1 / 4” keep it short and legible.</div></div>
+        <div class="rrow"><div class="rk">Animation</div><div class="rv">Horizontal track slides with an ease-out spring; dots animate indigo→green; the summary card lands on a soft green field.</div></div>
+        <div class="rrow"><div class="rk">Layout</div><div class="rv">Full-bleed carousel replaces the stacked list. Biggest structural change of the set — an “experimental direction.”</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Preparedness ↑</div><div class="rv">One-item-per-card focus + the “most important” tag on PAN forces attention onto each requirement in turn.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Reschedule ↑</div><div class="rv">The end-card poses a genuine either/or with equal visual weight, so “hold my slot” reads as a choice, not a retreat.</div></div>
+        <div class="rrow tradeoff full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Trade-offs</div><div class="rv">Highest interaction cost — the CTA is 3 swipes deep, which can dent start-rate for the already-ready. Consider a “Skip — I’m ready” shortcut on card 1 for repeat/confident users.</div></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ==================================================================
+       CONCEPT 4 — SMART GATE
+  =================================================================== -->
+  <section class="concept flip" id="c4">
+    <div class="stage">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span>
+            <span class="sig">
+              <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.2" fill="currentColor"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="topbar">
+              <span class="lang"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18" stroke="currentColor" stroke-width="2"/></svg> English</span>
+              <button class="xbtn" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="body">
+              <div class="h-title" style="font-size:20px">Two quick questions</div>
+              <div class="h-sub">So your call goes right the first time.</div>
+              <div class="scrollarea" style="margin-top:8px">
+                <div class="gate-row" data-gate>
+                  <span class="g-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" stroke="#4F46E5" stroke-width="1.8"/><circle cx="8" cy="11" r="1.5" fill="#4F46E5"/><path d="M13 10h5M13 13h5" stroke="#4F46E5" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+                  <span class="g-q">Do you have your <b>original</b> PAN card in hand?</span>
+                  <span class="seg"><button class="yes" data-v="yes">Yes</button><button class="no" data-v="no">No</button></span>
+                </div>
+                <div class="gate-row" data-gate>
+                  <span class="g-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-9 9H5v-6l9-9Z" stroke="#4F46E5" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                  <span class="g-q">Pen &amp; white paper ready?</span>
+                  <span class="seg"><button class="yes" data-v="yes">Yes</button><button class="no" data-v="no">No</button></span>
+                </div>
+                <div class="gate-row" data-gate style="border-bottom:none">
+                  <span class="g-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M2 8.5a14 14 0 0 1 20 0M8 15.5a4 4 0 0 1 8 0" stroke="#4F46E5" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="19" r="1.3" fill="#4F46E5"/></svg></span>
+                  <span class="g-q">On stable internet?</span>
+                  <span class="seg"><button class="yes" data-v="yes">Yes</button><button class="no" data-v="no">No</button></span>
+                </div>
+                <div class="gate-hint" id="c4-hint">Answer both to continue</div>
+              </div>
+            </div>
+            <div class="footer-cta">
+              <button class="btn btn-primary" id="c4-cta" disabled>Start Video KYC</button>
+              <div class="homebar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" data-replay="c4"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Reset answers</button>
+    </div>
+
+    <div class="info">
+      <div class="cnum">CONCEPT 04</div>
+      <h3>Smart Gate — the CTA answers back</h3>
+      <p class="thesis">Three plain Yes/No questions. The primary button <i>listens</i>: all-yes and it’s a confident “Start Video KYC”; a single “No” and it morphs — indigo and prominent — into “Hold my priority slot,” because for an unprepared user that genuinely <b>is</b> the better button. The system routes people to the right outcome instead of hoping they self-select.</p>
+      <div class="tags"><span class="tag primary">Reschedule</span><span class="tag primary">Original PAN</span><span class="tag">Adaptive CTA</span></div>
+
+      <div class="rgrid">
+        <div class="rrow full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Interaction</div><div class="rv">Tap Yes/No per item. The footer CTA + hint update live. “No” on PAN swaps the primary action to reschedule; the start option demotes to a quiet link.</div></div>
+        <div class="rrow"><div class="rk">Animation</div><div class="rv">Selected segment fills (green Yes / red-text No) with a quick scale-tick; the CTA cross-fades label &amp; color on state change.</div></div>
+        <div class="rrow"><div class="rk">Layout</div><div class="rv">List items rewritten as questions with an inline segmented control. Footer keeps one adaptive primary button.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Preparedness ↑</div><div class="rv">A direct question (“in hand?”) is harder to skim than a statement; the user has to answer honestly to proceed.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Reschedule ↑</div><div class="rv">Biggest expected lift. Unready users are actively <i>guided</i> to reschedule as the primary CTA — not left to find a secondary link.</div></div>
+        <div class="rrow tradeoff full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Trade-offs</div><div class="rv">Users can lie to reach “Start” — but the honest “No→reschedule” path still captures a big share who’d otherwise fail live. Keep the start link reachable so we don’t trap a false-negative. Strongest when combined with Concept 2’s visual for “original.”</div></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ==================================================================
+       CONCEPT 5 — AMBIENT SPOTLIGHT
+  =================================================================== -->
+  <section class="concept" id="c5">
+    <div class="stage">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span>
+            <span class="sig">
+              <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.2" fill="currentColor"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="topbar">
+              <span class="lang"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18" stroke="currentColor" stroke-width="2"/></svg> English</span>
+              <button class="xbtn" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="body">
+              <div class="h-title">Video KYC</div>
+              <div class="h-sub">An agent will join you on a short video call. Keep these ready:</div>
+              <div class="scrollarea" style="margin-top:12px">
+                <div class="spot">
+                  <div class="halo"></div>
+                  <div class="pan" style="position:relative;z-index:2">
+                    <span class="orig-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg> ORIGINAL</span>
+                    <span class="pan-badge">I</span>
+                    <div class="pancard">
+                      <div class="pan-head"><span>INCOME TAX DEPT</span><span>GOVT. OF INDIA</span></div>
+                      <div class="pan-mid"><div class="pan-photo"><svg width="18" height="18" viewBox="0 0 24 24" fill="#8f86c4"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0Z"/></svg></div><div class="pan-lines"><i style="width:80%"></i><i style="width:60%"></i><i style="width:70%"></i></div><div class="pan-qr"></div></div>
+                      <div class="pan-no">ABCDE ●●●● E</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="cycler" id="c5-cycler">
+                  <div class="cyc-item on"><span class="xbadge" style="background:var(--p-slate)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></span> Not a photocopy</div>
+                  <div class="cyc-item"><span class="xbadge" style="background:var(--p-slate)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></span> Not a screenshot</div>
+                  <div class="cyc-item"><span class="xbadge" style="background:var(--p-slate)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></span> Not a digital image</div>
+                  <div class="cyc-item"><span class="tickbadge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> The original card only</div>
+                </div>
+                <div class="irow"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 4l6 6-9 9H5v-6l9-9Z" stroke="#4F46E5" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span class="txt">Carry a pen &amp; white paper</span></div>
+                <div class="irow"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 8.5a14 14 0 0 1 20 0M8 15.5a4 4 0 0 1 8 0" stroke="#4F46E5" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="19" r="1.3" fill="#4F46E5"/></svg></span><span class="txt">Have a good internet connection</span></div>
+              </div>
+            </div>
+            <div class="footer-cta">
+              <button class="btn btn-primary">Start Video KYC</button>
+              <button class="btn btn-ghost">Missing your PAN? Reschedule</button>
+              <div class="homebar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" data-replay="c5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Replay cues</button>
+    </div>
+
+    <div class="info">
+      <div class="cnum">CONCEPT 05</div>
+      <h3>Ambient PAN Spotlight — zero friction</h3>
+      <p class="thesis">The lightest-touch option, closest to today’s layout. A soft breathing halo draws the eye to the PAN card, a persistent “ORIGINAL” badge sits on it, and one line below quietly cycles the four cases — <b>not a photocopy → not a screenshot → not a digital image → the original card only</b>. Nothing to tap; the message lands while the user’s thumb hovers over Start.</p>
+      <div class="tags"><span class="tag primary">Original PAN</span><span class="tag">Ambient motion</span><span class="tag">Minimal change</span></div>
+
+      <div class="rgrid">
+        <div class="rrow full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Interaction</div><div class="rv">None required — purely ambient. It’s the safe, low-risk baseline change and the easiest to ship / A/B against the current screen.</div></div>
+        <div class="rrow"><div class="rk">Animation</div><div class="rv">Gentle radial halo pulse (2.6s loop) + a text cycler that fades each “not a…” line up through to “original card only.”</div></div>
+        <div class="rrow"><div class="rk">Layout</div><div class="rv">Near-identical to today. Adds the halo, an ORIGINAL badge, one cycling caption line, and upgrades reschedule to an outlined button.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Preparedness ↑</div><div class="rv">Motion + the rotating exclusions make the “original only” rule salient without adding a step. Modest but real lift.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Reschedule ↑</div><div class="rv">“Missing your PAN? Reschedule” as an outlined button (vs. faint text link) gives it real presence beside Start.</div></div>
+        <div class="rrow tradeoff full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Trade-offs</div><div class="rv">No forced attention — the fully checked-out user can still ignore it, so expect a smaller preparedness gain than the interactive concepts. Best as a low-risk first ship or a control-adjacent variant.</div></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ==================================================================
+       CONCEPT 6 — RESCHEDULE FORWARD
+  =================================================================== -->
+  <section class="concept flip" id="c6">
+    <div class="stage">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span>
+            <span class="sig">
+              <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+              <svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="2.5" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.2" fill="currentColor"/></svg>
+            </span>
+          </div>
+          <div class="app">
+            <div class="topbar">
+              <span class="lang"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M3 12h18" stroke="currentColor" stroke-width="2"/></svg> English</span>
+              <button class="xbtn" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="body">
+              <div class="h-title" style="font-size:20px">When would you like to verify?</div>
+              <div class="h-sub">The call needs your <b>original</b> PAN, pen &amp; paper.</div>
+
+              <div class="rf-seg" id="c6-seg">
+                <button class="on" data-mode="ready">I’m ready now<small>Everything’s in hand</small></button>
+                <button data-mode="later">In a few minutes<small>Grab my PAN first</small></button>
+              </div>
+
+              <div class="scrollarea" style="margin-top:2px">
+                <div class="rf-panel ready" id="c6-panel">
+                  <div class="rf-h" id="c6-h">You’ll need on the call:</div>
+                  <ul class="rf-list" id="c6-list">
+                    <li><span class="tickbadge" style="width:18px;height:18px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Your original PAN card — no copy or screenshot</li>
+                    <li><span class="tickbadge" style="width:18px;height:18px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> A pen &amp; white paper</li>
+                    <li><span class="tickbadge" style="width:18px;height:18px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> A stable internet connection</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="footer-cta">
+              <button class="btn btn-primary" id="c6-cta">Start Video KYC</button>
+              <div class="powered"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V5l7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> powered by HyperVerge</div>
+              <div class="homebar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="replay" data-replay="c6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 2.3 5.6M4 12V7m0 5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Reset</button>
+    </div>
+
+    <div class="info">
+      <div class="cnum">CONCEPT 06</div>
+      <h3>Reschedule-Forward — reframe the choice</h3>
+      <p class="thesis">Instead of Start (big) vs. Schedule (small escape), the screen opens with an even question: <b>“When would you like to verify?”</b> — “I’m ready now” or “In a few minutes.” Reschedule stops being a failure exit and becomes a legitimate, low-guilt option chosen up front. Picking “In a few minutes” reframes the whole panel around holding a priority slot.</p>
+      <div class="tags"><span class="tag primary">Reschedule</span><span class="tag">Framing</span><span class="tag">CTA hierarchy</span></div>
+
+      <div class="rgrid">
+        <div class="rrow full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Interaction</div><div class="rv">A two-option segmented control at the top sets intent. It swaps the panel content and the footer CTA between “Start Video KYC” and “Hold my priority slot.”</div></div>
+        <div class="rrow"><div class="rk">Animation</div><div class="rv">Segment thumb slides; panel cross-fades between an indigo “ready” checklist and a green “we’ll hold your slot” reassurance card; CTA label/colour transitions.</div></div>
+        <div class="rrow"><div class="rk">Layout</div><div class="rv">Reschedule is promoted from a secondary button to half of the primary decision. Single adaptive footer CTA instead of two stacked buttons.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Preparedness ↑</div><div class="rv">Framing the moment as “when,” with the requirement line right under it, prompts a readiness self-assessment before committing.</div></div>
+        <div class="rrow up"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Reschedule ↑</div><div class="rv">Directly targets the 6.7% problem: equal placement + positive “few minutes / priority slot” language removes the stigma of the escape hatch.</div></div>
+        <div class="rrow tradeoff full"><div class="rk"><svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Trade-offs</div><div class="rv">Making reschedule this prominent could pull some ready users into deferring — watch that total completions don’t drop. Keep “I’m ready now” pre-selected (default bias toward starting) and measure downstream completion of rescheduled sessions.</div></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ RECOMMENDATION ============ -->
+  <div class="sectlabel"><h2>How they fit together</h2><div class="rule"></div></div>
+  <section class="foot" style="max-width:78ch">
+    <p style="font-size:15px;color:var(--slate);line-height:1.7">
+      These aren’t six competing skins — they’re a <b>ladder of interaction cost</b>. Ship
+      <b>Concept 5 (Ambient Spotlight)</b> first: it’s the lowest-risk change and a clean A/B against today.
+      Run <b>Concept 4 (Smart Gate)</b> and <b>Concept 1 (Guided Self-Check)</b> as the preparedness bets — they force
+      an honest check and route unready users to reschedule. Fold <b>Concept 2’s</b> original-vs-copy animation into whichever
+      wins, since it teaches the #1 failure with zero added steps. <b>Concept 6</b> is the reschedule-conversion experiment; <b>Concept 3</b> is the
+      experimental full-redesign to hold in reserve.
+    </p>
+    <div class="legend">
+      <span><span class="sw" style="background:var(--p-green)"></span> Boosts preparedness</span>
+      <span><span class="sw" style="background:var(--p-indigo)"></span> Boosts reschedule</span>
+      <span><span class="sw" style="background:var(--p-amber)"></span> Higher interaction cost</span>
+    </div>
+    <p style="margin-top:22px;font-size:13px;color:var(--mute)">
+      Prototype built to the HyperVerge visual system — indigo <code>#4F46E5</code>, lavender PAN card, existing type &amp; spacing.
+      All motion respects <code>prefers-reduced-motion</code>. Every phone above is interactive.
+    </p>
+  </section>
+
+</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(s,r){return (r||document).querySelector(s);};
+  var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  /* ---------- C1 : Guided self-check ---------- */
+  (function(){
+    var root=$("#c1"); if(!root) return;
+    var items=$$(".sc-item",root);
+    var dots=$$("#c1-dots i");
+    var start=$("#c1-start",root);
+    var resched=$("#c1-resched",root);
+    function tick(){return '<span class="tickbadge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';}
+    function reset(){
+      items.forEach(function(it,i){
+        it.className="sc-item"+(i===0?" active":" locked");
+        $(".sc-state",it).innerHTML="";
+      });
+      dots.forEach(function(d,i){d.className=i===0?"on":"";});
+      start.disabled=true; start.textContent="Confirm all items to start";
+      resched.classList.remove("show");
+    }
+    function refresh(){
+      var done=items.filter(function(it){return it.classList.contains("done");}).length;
+      dots.forEach(function(d,i){ d.className = i<done?"done": (i===done && done<3?"on":""); });
+      if(done===3){ start.disabled=false; start.textContent="Start Video KYC"; }
+    }
+    items.forEach(function(it,i){
+      $$(".sc-actions button",it).forEach(function(b){
+        b.addEventListener("click",function(){
+          if(b.dataset.a==="no"){ resched.classList.add("show"); return; }
+          resched.classList.remove("show");
+          it.classList.remove("active"); it.classList.add("done");
+          $(".sc-state",it).innerHTML=tick();
+          var nxt=items[i+1];
+          if(nxt){ nxt.classList.remove("locked"); nxt.classList.add("active"); }
+          refresh();
+        });
+      });
+    });
+    root._reset=reset; reset();
+  })();
+
+  /* ---------- C2 : Original vs copy ---------- */
+  (function(){
+    var root=$("#c2"); if(!root) return;
+    var wrap=$("#c2-wrap",root);
+    function play(){ wrap.classList.remove("oc-reject","oc-reveal");
+      void wrap.offsetWidth;
+      setTimeout(function(){wrap.classList.add("oc-reject");}, reduce?0:250);
+      setTimeout(function(){wrap.classList.add("oc-reveal");}, reduce?0:650);
+    }
+    root._reset=play;
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ play(); io.unobserve(e.target);} });},{threshold:.4});
+    io.observe(root);
+  })();
+
+  /* ---------- C3 : Swipe deck ---------- */
+  (function(){
+    var root=$("#c3"); if(!root) return;
+    var track=$(".deck-track",root), prev=$("#c3-prev",root), next=$("#c3-next",root),
+        dots=$$("#c3-dots i"), count=$("#c3-count",root), n=4, i=0;
+    function go(k){ i=Math.max(0,Math.min(n-1,k));
+      track.style.transform="translateX("+(-i*100)+"%)";
+      dots.forEach(function(d,x){d.className=x<i?"done":(x===i?"on":"");});
+      prev.disabled=i===0; next.disabled=i===n-1;
+      count.textContent=(i<n-1?"Swipe to review · ":"Ready · ")+(i+1)+" / "+n;
+    }
+    prev.addEventListener("click",function(){go(i-1);});
+    next.addEventListener("click",function(){go(i+1);});
+    dots.forEach(function(d,x){d.addEventListener("click",function(){go(x);});});
+    /* pointer drag */
+    var x0=null;
+    track.addEventListener("pointerdown",function(e){x0=e.clientX;});
+    window.addEventListener("pointerup",function(e){ if(x0===null)return; var dx=e.clientX-x0; if(Math.abs(dx)>40){ go(i+(dx<0?1:-1)); } x0=null; });
+    root._reset=function(){go(0);};
+    go(0);
+  })();
+
+  /* ---------- C4 : Smart gate ---------- */
+  (function(){
+    var root=$("#c4"); if(!root) return;
+    var rows=$$("[data-gate]",root), cta=$("#c4-cta",root), hint=$("#c4-hint",root);
+    var state=[null,null,null];
+    function refresh(){
+      var answered=state.every(function(s){return s!==null;});
+      var anyNo=state.indexOf("no")>-1;
+      var panNo=state[0]==="no";
+      if(!answered){ cta.disabled=true; cta.className="btn btn-primary"; cta.textContent="Start Video KYC";
+        hint.textContent="Answer all three to continue"; hint.style.color="var(--p-slate)"; return; }
+      cta.disabled=false;
+      if(anyNo){
+        cta.className="btn btn-primary"; cta.textContent= panNo? "Hold my slot — grab your PAN":"Hold my priority slot";
+        hint.innerHTML = panNo ? "The call needs the <b>original</b> card. Reschedule keeps your place." : "Not ready? Reschedule keeps your place in line.";
+        hint.style.color="var(--p-indigo)";
+      } else {
+        cta.className="btn btn-primary"; cta.textContent="Start Video KYC";
+        hint.innerHTML="You’re all set ✓"; hint.style.color="var(--p-green)";
+      }
+    }
+    rows.forEach(function(row,i){
+      $$(".seg button",row).forEach(function(b){
+        b.addEventListener("click",function(){
+          state[i]=b.dataset.v;
+          $$(".seg button",row).forEach(function(x){x.classList.remove("on");});
+          b.classList.add("on");
+          if(!reduce){ b.animate([{transform:"scale(.92)"},{transform:"scale(1)"}],{duration:160,easing:"ease-out"}); }
+          refresh();
+        });
+      });
+    });
+    root._reset=function(){ state=[null,null,null];
+      $$(".seg button",root).forEach(function(x){x.classList.remove("on");}); refresh(); };
+    refresh();
+  })();
+
+  /* ---------- C5 : Ambient cycler ---------- */
+  (function(){
+    var root=$("#c5"); if(!root) return;
+    var items=$$("#c5-cycler .cyc-item"), i=0, timer=null;
+    function step(){ items.forEach(function(x){x.classList.remove("on");}); items[i].classList.add("on"); i=(i+1)%items.length; }
+    function start(){ if(timer) clearInterval(timer); i=0; step(); if(!reduce){ timer=setInterval(step,1600); } }
+    root._reset=start;
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){start();} else if(timer){clearInterval(timer);timer=null;} });},{threshold:.3});
+    io.observe(root);
+  })();
+
+  /* ---------- C6 : Reschedule forward ---------- */
+  (function(){
+    var root=$("#c6"); if(!root) return;
+    var seg=$$("#c6-seg button",root), panel=$("#c6-panel",root), h=$("#c6-h",root),
+        list=$("#c6-list",root), cta=$("#c6-cta",root);
+    var readyHTML=list.innerHTML;
+    var laterHTML=''
+      +'<li><span class="tickbadge" style="width:18px;height:18px;background:#16A34A"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> We’ll hold a <b>priority slot</b> for you.</li>'
+      +'<li><span class="tickbadge" style="width:18px;height:18px;background:#16A34A"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Grab your original PAN, pen &amp; paper — no rush.</li>'
+      +'<li><span class="tickbadge" style="width:18px;height:18px;background:#16A34A"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> We’ll text you a link to jump straight back in.</li>';
+    function set(mode){
+      seg.forEach(function(b){b.classList.toggle("on",b.dataset.mode===mode);});
+      if(mode==="ready"){
+        panel.className="rf-panel ready"; h.textContent="You’ll need on the call:";
+        list.innerHTML=readyHTML; cta.textContent="Start Video KYC";
+      }else{
+        panel.className="rf-panel later"; h.textContent="No problem — we’ll keep your place";
+        list.innerHTML=laterHTML; cta.textContent="Hold my priority slot";
+      }
+      if(!reduce){ panel.animate([{opacity:.3,transform:"translateY(4px)"},{opacity:1,transform:"none"}],{duration:260,easing:"ease-out"}); }
+    }
+    seg.forEach(function(b){b.addEventListener("click",function(){set(b.dataset.mode);});});
+    root._reset=function(){set("ready");};
+    set("ready");
+  })();
+
+  /* ---------- replay buttons ---------- */
+  $$(".replay").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      var root=$("#"+btn.dataset.replay);
+      if(root && typeof root._reset==="function") root._reset();
+    });
+  });
+})();
+</script>
+</body>
+</html>
