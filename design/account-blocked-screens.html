@@ -1,0 +1,373 @@
+<title>Account Blocked / Invalid Account — Screen Designs</title>
+<style>
+  :root {
+    --page-bg: #eceaf2;
+    --page-panel: #ffffff;
+    --page-ink: #2b2a44;
+    --page-muted: #6f6e8c;
+    --page-border: #dcdae6;
+    --page-chip-bg: #ffffff;
+    --page-chip-ink: #514f7a;
+
+    --app-bg: #ffffff;
+    --app-ink: #3a3a63;
+    --app-ink-strong: #2f2f57;
+    --app-muted: #7d7c9e;
+    --app-surface: #f4f4f8;
+    --app-border: #e9e8f1;
+    --app-accent: #5b4bd6;
+    --app-accent-ink: #ffffff;
+    --app-green: #33c37d;
+    --app-amber: #e8912f;
+    --app-amber-bg: #fbf1e2;
+    --app-red-soft: #e5564f;
+
+    --radius-md: 16px;
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page-bg: #131320;
+      --page-panel: #1c1c2e;
+      --page-ink: #ecebf5;
+      --page-muted: #9a99b8;
+      --page-border: #2c2c44;
+      --page-chip-bg: #23233a;
+      --page-chip-ink: #c9c8e6;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #131320;
+    --page-panel: #1c1c2e;
+    --page-ink: #ecebf5;
+    --page-muted: #9a99b8;
+    --page-border: #2c2c44;
+    --page-chip-bg: #23233a;
+    --page-chip-ink: #c9c8e6;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    color: var(--page-ink);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 48px 24px 72px; }
+  header.intro { max-width: 760px; margin-bottom: 8px; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--app-accent); font-weight: 700; margin: 0 0 10px; }
+  h1 { font-size: clamp(26px, 4vw, 38px); line-height: 1.12; margin: 0 0 14px; letter-spacing: -0.02em; text-wrap: balance; }
+  .lede { font-size: 17px; color: var(--page-muted); margin: 0; max-width: 66ch; }
+
+  .grid { margin-top: 44px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px 32px; justify-items: center; }
+  .card-col { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 16px; }
+
+  .meta { display: flex; flex-direction: column; gap: 8px; }
+  .meta .tag { align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 5px 10px; border-radius: 999px; background: var(--page-chip-bg); color: var(--page-chip-ink); border: 1px solid var(--page-border); }
+  .meta h2 { font-size: 18px; margin: 0; letter-spacing: -0.01em; }
+  .meta p { font-size: 13.5px; color: var(--page-muted); margin: 0; }
+
+  .phone {
+    width: 340px; max-width: 100%; aspect-ratio: 340 / 720;
+    background: var(--app-bg); border-radius: 42px; border: 10px solid #14131f;
+    box-shadow: 0 30px 60px -24px rgba(20,19,40,.55), 0 8px 20px -12px rgba(20,19,40,.4);
+    position: relative; overflow: hidden; display: flex; flex-direction: column; color: var(--app-ink);
+  }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 26px; background: #14131f; border-radius: 0 0 16px 16px; z-index: 5; }
+  .statusbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 26px 0; font-size: 15px; font-weight: 600; color: var(--app-ink-strong); }
+  .statusbar .icons { display: flex; gap: 6px; align-items: center; opacity: .85; }
+  .statusbar .icons svg { display: block; }
+
+  .screen { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 24px 20px; text-align: center; overflow: hidden; }
+
+  .art { margin-top: 34px; width: 104px; height: 104px; display: grid; place-items: center; position: relative; flex: none; }
+
+  .headline { margin: 22px 0 0; font-size: 22px; font-weight: 700; color: var(--app-ink-strong); letter-spacing: -0.01em; text-wrap: balance; }
+  .subcopy { margin: 10px 0 0; font-size: 15px; color: var(--app-muted); max-width: 32ch; text-wrap: pretty; }
+
+  /* education block */
+  .edu {
+    width: 100%; margin-top: 18px;
+    background: var(--app-surface);
+    border-radius: var(--radius-md);
+    padding: 16px 16px 14px;
+    text-align: left;
+  }
+  .edu .edu-title { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--app-ink-strong); opacity: .75; margin: 0 0 12px; }
+  .edu ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .edu li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--app-ink-strong); line-height: 1.4; }
+  .edu li svg { flex: none; margin-top: 1px; }
+  .edu li span { color: var(--app-muted); }
+  .edu li b { color: var(--app-ink-strong); font-weight: 600; }
+
+  .spacer { flex: 1; min-height: 12px; }
+
+  .actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .btn { width: 100%; border: none; border-radius: 14px; padding: 15px; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .btn-primary { background: var(--app-accent); color: var(--app-accent-ink); }
+  .btn-outline { background: transparent; color: var(--app-accent); border: 1.5px solid var(--app-border); }
+  .btn-ghost { background: transparent; color: var(--app-muted); font-weight: 600; padding: 10px; }
+
+  .footer-brand { margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--app-muted); }
+  .footer-brand strong { color: var(--app-ink-strong); font-weight: 600; }
+
+  .note { margin-top: 56px; background: var(--page-panel); border: 1px solid var(--page-border); border-radius: 18px; padding: 26px 28px; max-width: 880px; }
+  .note h3 { margin: 0 0 14px; font-size: 16px; }
+  .note ul { margin: 0; padding-left: 18px; color: var(--page-muted); font-size: 14.5px; }
+  .note li { margin-bottom: 8px; }
+  .note li strong { color: var(--page-ink); font-weight: 600; }
+  .note .rule { margin: 18px 0; border: none; border-top: 1px solid var(--page-border); }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <p class="eyebrow">VKYC · Account Verification</p>
+    <h1>Account blocked / invalid — with next-step education</h1>
+    <p class="lede">Shown when the bank account can’t be verified — either the bank has <em>blocked</em> it, or the details are <em>invalid</em>. A retry alone won’t fix a blocked account, so each screen briefly educates the user on why it happened and what they can do, then offers a clear <strong>retry</strong> and <strong>exit</strong>. Same design language as the payment and error screens.</p>
+  </header>
+
+  <div class="grid">
+
+    <!-- ============ A · Account blocked (exit-leaning) ============ -->
+    <div class="card-col">
+      <div class="meta">
+        <span class="tag">A · Blocked · exit-led</span>
+        <h2>Account Blocked</h2>
+        <p>Bank has restricted the account. Retry won’t help until resolved, so exit leads.</p>
+      </div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>19:12</span>
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1" opacity=".4"/><rect x="15" y="1" width="3" height="11" rx="1" opacity=".4"/></svg>
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 4.5C4.5 1.5 12.5 1.5 16 4.5M3.3 7C5.8 5 11.2 5 13.7 7M6 9.5c1.5-1.2 3.5-1.2 5 0" stroke-linecap="round"/></svg>
+            <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="0" width="21" height="12" rx="3" opacity=".35"/><rect x="2" y="2" width="17" height="8" rx="1.5"/><rect x="22" y="4" width="2" height="4" rx="1"/></svg>
+          </span>
+        </div>
+        <div class="screen">
+          <div class="art">
+            <svg width="104" height="104" viewBox="0 0 104 104" fill="none">
+              <circle cx="52" cy="52" r="50" fill="#e5564f" opacity="0.08"/>
+              <circle cx="52" cy="52" r="35" fill="#e5564f" opacity="0.10"/>
+              <rect x="36" y="50" width="32" height="24" rx="5" stroke="#e5564f" stroke-width="3.2"/>
+              <path d="M42 50v-6a10 10 0 0 1 20 0" stroke="#e5564f" stroke-width="3.2" stroke-linecap="round"/>
+              <circle cx="52" cy="61" r="3.2" fill="#e5564f"/>
+              <path d="M52 64v4" stroke="#e5564f" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="headline">Account Blocked</h2>
+          <p class="subcopy">Your bank has placed a hold on this account, so we can’t verify it right now.</p>
+          <div class="edu">
+            <p class="edu-title">What you can do</p>
+            <ul>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#e8912f" stroke-width="1.6"/><path d="M9 5.5v4.5" stroke="#e8912f" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="12.6" r="1" fill="#e8912f"/></svg>
+                <span><b>Contact your bank</b> to find out why the account is on hold and get it reactivated.</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="4" width="13" height="10" rx="2" stroke="#5b4bd6" stroke-width="1.6"/><path d="M2.5 7.5h13" stroke="#5b4bd6" stroke-width="1.6"/></svg>
+                <span><b>Use a different account</b> that’s active and in your name.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="spacer"></div>
+          <div class="actions">
+            <button class="btn btn-primary">Try a Different Account</button>
+            <button class="btn btn-ghost">Exit</button>
+          </div>
+          <div class="footer-brand">
+            <svg width="16" height="18" viewBox="0 0 16 18" fill="none"><path d="M8 1l6 2.5v5C14 13 11.3 15.8 8 17 4.7 15.8 2 13 2 8.5v-5L8 1z" fill="#33c37d" opacity=".18"/><path d="M8 1l6 2.5v5C14 13 11.3 15.8 8 17 4.7 15.8 2 13 2 8.5v-5L8 1z" stroke="#33c37d" stroke-width="1.3"/><path d="M5.5 9l1.8 1.8L11 7" stroke="#33c37d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            powered by <strong>HyperVerge</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ B · Invalid account (retry-leaning) ============ -->
+    <div class="card-col">
+      <div class="meta">
+        <span class="tag">B · Invalid · retry-led</span>
+        <h2>We Couldn’t Verify This Account</h2>
+        <p>Details didn’t match. A corrected retry is the likely fix, so retry leads.</p>
+      </div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>19:12</span>
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1" opacity=".4"/><rect x="15" y="1" width="3" height="11" rx="1" opacity=".4"/></svg>
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 4.5C4.5 1.5 12.5 1.5 16 4.5M3.3 7C5.8 5 11.2 5 13.7 7M6 9.5c1.5-1.2 3.5-1.2 5 0" stroke-linecap="round"/></svg>
+            <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="0" width="21" height="12" rx="3" opacity=".35"/><rect x="2" y="2" width="17" height="8" rx="1.5"/><rect x="22" y="4" width="2" height="4" rx="1"/></svg>
+          </span>
+        </div>
+        <div class="screen">
+          <div class="art">
+            <svg width="104" height="104" viewBox="0 0 104 104" fill="none">
+              <circle cx="52" cy="52" r="50" fill="#e8912f" opacity="0.10"/>
+              <circle cx="52" cy="52" r="35" fill="#e8912f" opacity="0.12"/>
+              <rect x="32" y="40" width="40" height="26" rx="4" stroke="#e8912f" stroke-width="3.2"/>
+              <path d="M32 47h40" stroke="#e8912f" stroke-width="3.2"/>
+              <circle cx="66" cy="66" r="12" fill="#fbf1e2" stroke="#e8912f" stroke-width="3"/>
+              <path d="M62 66h8" stroke="#e8912f" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="headline">We Couldn’t Verify This Account</h2>
+          <p class="subcopy">The account details don’t seem to match your bank’s records.</p>
+          <div class="edu">
+            <p class="edu-title">Before you retry, check</p>
+            <ul>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 9.2l3.2 3.2L14 5.5" stroke="#5b4bd6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>The <b>account number</b> and <b>IFSC</b> are entered correctly.</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 9.2l3.2 3.2L14 5.5" stroke="#5b4bd6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>The account is <b>in your name</b> and currently active.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="spacer"></div>
+          <div class="actions">
+            <button class="btn btn-primary">Retry</button>
+            <button class="btn btn-ghost">Exit</button>
+          </div>
+          <div class="footer-brand">
+            <svg width="16" height="18" viewBox="0 0 16 18" fill="none"><path d="M8 1l6 2.5v5C14 13 11.3 15.8 8 17 4.7 15.8 2 13 2 8.5v-5L8 1z" fill="#33c37d" opacity=".18"/><path d="M8 1l6 2.5v5C14 13 11.3 15.8 8 17 4.7 15.8 2 13 2 8.5v-5L8 1z" stroke="#33c37d" stroke-width="1.3"/><path d="M5.5 9l1.8 1.8L11 7" stroke="#33c37d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            powered by <strong>HyperVerge</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ C · Unified / gentle ============ -->
+    <div class="card-col">
+      <div class="meta">
+        <span class="tag">C · Unified · gentle</span>
+        <h2>This Account Can’t Be Used</h2>
+        <p>One screen for both cases; balanced retry + exit, single-line reasons.</p>
+      </div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>19:12</span>
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1" opacity=".4"/><rect x="15" y="1" width="3" height="11" rx="1" opacity=".4"/></svg>
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 4.5C4.5 1.5 12.5 1.5 16 4.5M3.3 7C5.8 5 11.2 5 13.7 7M6 9.5c1.5-1.2 3.5-1.2 5 0" stroke-linecap="round"/></svg>
+            <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="0" width="21" height="12" rx="3" opacity=".35"/><rect x="2" y="2" width="17" height="8" rx="1.5"/><rect x="22" y="4" width="2" height="4" rx="1"/></svg>
+          </span>
+        </div>
+        <div class="screen">
+          <div class="art">
+            <svg width="104" height="104" viewBox="0 0 104 104" fill="none">
+              <circle cx="52" cy="52" r="50" fill="#5b4bd6" opacity="0.07"/>
+              <circle cx="52" cy="52" r="35" fill="#5b4bd6" opacity="0.10"/>
+              <path d="M52 30l22 10v14c0 13-9 22-22 26-13-4-22-13-22-26V40l22-10z" stroke="#5b4bd6" stroke-width="3" stroke-linejoin="round"/>
+              <path d="M46 52l5 5 10-11" stroke="#5b4bd6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".3"/>
+              <path d="M46 46l12 12M58 46L46 58" stroke="#5b4bd6" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="headline">This Account Can’t Be Used</h2>
+          <p class="subcopy">We weren’t able to verify this bank account for your KYC.</p>
+          <div class="edu">
+            <p class="edu-title">This usually happens when</p>
+            <ul>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="1.6" fill="#7d7c9e"/><circle cx="9" cy="9" r="6.5" stroke="#7d7c9e" stroke-width="1.4" opacity=".5"/></svg>
+                <span>The account is <b>blocked or inactive</b> at your bank.</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="1.6" fill="#7d7c9e"/><circle cx="9" cy="9" r="6.5" stroke="#7d7c9e" stroke-width="1.4" opacity=".5"/></svg>
+                <span>The <b>details entered don’t match</b> the bank’s records.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="spacer"></div>
+          <div class="actions">
+            <button class="btn btn-primary">Try Again</button>
+            <button class="btn btn-outline">Exit Verification</button>
+          </div>
+          <div class="footer-brand">
+            <svg width="16" height="18" viewBox="0 0 16 18" fill="none"><path d="M8 1l6 2.5v5C14 13 11.3 15.8 8 17 4.7 15.8 2 13 2 8.5v-5L8 1z" fill="#33c37d" opacity=".18"/><path d="M8 1l6 2.5v5C14 13 11.3 15.8 8 17 4.7 15.8 2 13 2 8.5v-5L8 1z" stroke="#33c37d" stroke-width="1.3"/><path d="M5.5 9l1.8 1.8L11 7" stroke="#33c37d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            powered by <strong>HyperVerge</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ D · Blocked + support ============ -->
+    <div class="card-col">
+      <div class="meta">
+        <span class="tag">D · Blocked · with support</span>
+        <h2>Verification Not Possible</h2>
+        <p>For hard blocks: educate, offer support, and a graceful exit; retry is secondary.</p>
+      </div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>19:12</span>
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="1" width="3" height="11" rx="1" opacity=".4"/><rect x="15" y="1" width="3" height="11" rx="1" opacity=".4"/></svg>
+            <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1 4.5C4.5 1.5 12.5 1.5 16 4.5M3.3 7C5.8 5 11.2 5 13.7 7M6 9.5c1.5-1.2 3.5-1.2 5 0" stroke-linecap="round"/></svg>
+            <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="0" width="21" height="12" rx="3" opacity=".35"/><rect x="2" y="2" width="17" height="8" rx="1.5"/><rect x="22" y="4" width="2" height="4" rx="1"/></svg>
+          </span>
+        </div>
+        <div class="screen">
+          <div class="art">
+            <svg width="104" height="104" viewBox="0 0 104 104" fill="none">
+              <circle cx="52" cy="52" r="50" fill="#e5564f" opacity="0.08"/>
+              <circle cx="52" cy="52" r="35" fill="#e5564f" opacity="0.10"/>
+              <circle cx="52" cy="52" r="22" stroke="#e5564f" stroke-width="3.2"/>
+              <path d="M37 37l30 30" stroke="#e5564f" stroke-width="3.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="headline">Verification Not Possible</h2>
+          <p class="subcopy">This account is blocked, so it can’t be verified for KYC at the moment.</p>
+          <div class="edu">
+            <p class="edu-title">Next steps</p>
+            <ul>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3.5 4.5c0 6 4 10 10 10l1.5-2.6-3-1.6-1.4 1.4a8 8 0 0 1-3.8-3.8l1.4-1.4-1.6-3L4 3.5c-.3.3-.5.6-.5 1z" stroke="#5b4bd6" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                <span>Reach out to your bank to lift the block.</span>
+              </li>
+              <li>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="4" width="13" height="10" rx="2" stroke="#5b4bd6" stroke-width="1.6"/><path d="M2.5 7.5h13" stroke="#5b4bd6" stroke-width="1.6"/></svg>
+                <span>Or retry with an active account in your name.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="spacer"></div>
+          <div class="actions">
+            <button class="btn btn-outline">Try Another Account</button>
+            <button class="btn btn-primary">Contact Support</button>
+            <button class="btn btn-ghost">Exit</button>
+          </div>
+          <div class="footer-brand">
+            <svg width="16" height="18" viewBox="0 0 16 18" fill="none"><path d="M8 1l6 2.5v5C14 13 11.3 15.8 8 17 4.7 15.8 2 13 2 8.5v-5L8 1z" fill="#33c37d" opacity=".18"/><path d="M8 1l6 2.5v5C14 13 11.3 15.8 8 17 4.7 15.8 2 13 2 8.5v-5L8 1z" stroke="#33c37d" stroke-width="1.3"/><path d="M5.5 9l1.8 1.8L11 7" stroke="#33c37d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            powered by <strong>HyperVerge</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <h3>Design intent</h3>
+    <ul>
+      <li><strong>Educate, don’t just block</strong> — a blocked/invalid account is a dead end without guidance, so every screen answers “why?” in one line and “what now?” in two short, plain-language points. No jargon, no bank error codes.</li>
+      <li><strong>CTA emphasis follows the cause</strong> — for an <em>invalid</em> account a corrected retry usually works, so <strong>Retry is primary</strong> (B). For a <em>blocked</em> account retry won’t help until the bank acts, so retry becomes “try a different account” and <strong>Exit / Support</strong> carry more weight (A, D).</li>
+      <li><strong>Exit is always available</strong> — never trap a user who genuinely can’t proceed; Exit is present on all four, styled quietly so it doesn’t compete with the recovery path.</li>
+    </ul>
+    <hr class="rule">
+    <h3>Recommendation</h3>
+    <ul>
+      <li>If your backend can distinguish the two cases, use <strong>B</strong> for invalid details and <strong>A</strong> for blocked accounts — the tailored guidance converts better.</li>
+      <li>If it returns a single “can’t verify” signal, ship <strong>C</strong> — it covers both causes honestly without guessing.</li>
+      <li>Add <strong>D</strong>’s support path only for markets/flows where users routinely need human help to resolve a block.</li>
+    </ul>
+  </div>
+</div>
