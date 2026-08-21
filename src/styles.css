@@ -1,0 +1,208 @@
+:root {
+  --bg: #eef0f3;
+  --card: #ffffff;
+  --ink: #1c1f24;
+  --muted: #8a9099;
+  --line: #e9ebee;
+  --danger: #e5484d;
+  --accent: #3b6ef5;
+  --shadow: 0 18px 50px -18px rgba(20, 25, 40, 0.35);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ---------------- demo layout ---------------- */
+
+.demo {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 28px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+@media (max-width: 720px) {
+  .demo { grid-template-columns: 1fr; }
+}
+
+.demo-stage { display: flex; flex-direction: column; gap: 20px; align-items: center; }
+
+.demo-events {
+  width: 100%;
+  max-width: 360px;
+  font-size: 13px;
+}
+.demo-events h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.demo-events ul { list-style: none; margin: 0; padding: 0; }
+.demo-events li { padding: 4px 0; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+
+/* ---------------- the card ---------------- */
+
+.toss-card {
+  position: relative;
+  width: 360px;
+  max-width: 100%;
+  min-height: 300px;
+  background: var(--card);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 26px 26px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.toss-head h2 { margin: 0 0 6px; font-size: 20px; font-weight: 600; }
+.toss-head p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
+
+.toss-stage {
+  position: relative;
+  flex: 1;
+  min-height: 150px;
+  margin: 14px 0;
+}
+
+/* ---- bin ---- */
+
+.toss-bin {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.toss-bin-body {
+  position: absolute;
+  left: 8%;
+  bottom: 0;
+  width: 84%;
+  height: 82%;
+  background: linear-gradient(#f3f4f6, #dfe2e7);
+  border-radius: 6px 6px 12px 12px;
+  clip-path: polygon(6% 0, 94% 0, 86% 100%, 14% 100%);
+  box-shadow: inset 0 -6px 12px rgba(0,0,0,0.06);
+}
+.toss-bin-lid {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 14%;
+  background: #cfd3da;
+  border-radius: 4px;
+  transform-origin: left center;
+  transition: transform 0.16s ease;
+}
+.toss-bin[data-bin="gulp"] .toss-bin-lid { transform: rotate(-22deg) translateY(-2px); }
+.toss-bin[data-bin="gulp"] .toss-bin-body { animation: gulp 0.28s ease; }
+@keyframes gulp {
+  40% { transform: scaleY(0.9) scaleX(1.05); }
+  100% { transform: none; }
+}
+
+/* ---- ball / crumpled file ---- */
+
+.toss-ball {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  padding: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, #ffffff, #d7dbe1 78%);
+  box-shadow: 0 6px 14px -4px rgba(20, 25, 40, 0.4), inset 0 -3px 6px rgba(0,0,0,0.08);
+  cursor: grab;
+  touch-action: none;
+  z-index: 3;
+}
+.toss-ball[data-dragging="true"] { cursor: grabbing; }
+.toss-ball:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* ---- footer ---- */
+
+.toss-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.toss-misses { font-variant-numeric: tabular-nums; }
+
+/* ---- fallback buttons ---- */
+
+.toss-fallback {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  animation: rise 0.22s ease;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+.toss-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fff;
+}
+.toss-btn.ghost { color: var(--ink); }
+.toss-btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+/* ---- done state ---- */
+
+.toss-done {
+  margin: auto;
+  text-align: center;
+  padding: 30px 0;
+  animation: rise 0.25s ease;
+}
+.toss-done h2 { margin: 0 0 6px; font-size: 22px; }
+.toss-done p { margin: 0 0 16px; color: var(--muted); }
+.toss-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ---------------- control panel ---------------- */
+
+.panel {
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+  font-size: 13px;
+  align-self: start;
+  position: sticky;
+  top: 24px;
+}
+.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.panel-head h3 { margin: 0; font-size: 14px; }
+.panel-reset { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+
+.group { padding: 10px 0; border-top: 1px solid var(--line); }
+.group h4 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+
+.ctrl { display: block; margin-bottom: 10px; }
+.ctrl-label { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px; }
+.ctrl-label em { font-style: normal; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ctrl input[type="range"] { width: 100%; accent-color: var(--accent); }
+.ctrl input[type="text"] { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; }
+
+.seg { display: flex; gap: 4px; }
+.seg button { flex: 1; padding: 6px 4px; border: 1px solid var(--line); background: #fff; border-radius: 8px; cursor: pointer; font-size: 12px; }
+.seg button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
