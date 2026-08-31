@@ -89,13 +89,13 @@
   .layer{
     position:absolute; inset:0;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    opacity:0; transform:translateY(6px);
-    transition:opacity .26s var(--ease-acc), transform .3s var(--ease-acc);
+    opacity:0; transform:translateY(8px) scale(.99);
+    transition:opacity .34s var(--ease-acc), transform .36s var(--ease-acc);
     pointer-events:none; padding:18px;
   }
   .layer.active{
-    opacity:1; transform:translateY(0);
-    transition:opacity .3s var(--ease-dec), transform .32s var(--ease-dec);
+    opacity:1; transform:translateY(0) scale(1);
+    transition:opacity .46s var(--ease-dec) .08s, transform .5s var(--ease-dec) .08s;
   }
 
   /* ---- Layer 1: Choose UPI ---- */
@@ -135,22 +135,24 @@
   .pay-text{font-size:16px; color:var(--ink); margin-bottom:20px}
   .green-circle{ width:64px; height:64px; border-radius:50%; background:var(--green);
                  display:flex; align-items:center; justify-content:center; opacity:0; transform:scale(.8); }
-  .layer-pay.active .green-circle{ animation:popIn .26s var(--ease-dec) .06s forwards; }
+  .layer-pay.active .green-circle{ animation:popIn .34s var(--ease-dec) .12s forwards; }
   .green-circle path{ stroke-dasharray:26; stroke-dashoffset:26; }
-  .layer-pay.active .green-circle path{ animation:draw .24s var(--ease-dec) .16s forwards; }
+  .layer-pay.active .green-circle path{ animation:draw .3s var(--ease-dec) .28s forwards; }
 
   /* ---- Layer 4: Bank verified ---- */
-  .bank-wrap{position:relative; opacity:0; transform:translateY(6px) scale(.94)}
-  .layer-bank.active .bank-wrap{ animation:riseIn .3s var(--ease-dec) .04s forwards; }
+  .bank-wrap{position:relative; opacity:0; transform:translateY(8px) scale(.96)}
+  .layer-bank.active .bank-wrap{ animation:riseIn .44s var(--ease-dec) .1s forwards; }
   .bank-badge{position:absolute; right:-4px; bottom:-2px; width:22px; height:22px; border-radius:50%;
               background:var(--green); border:2.5px solid #fff; display:flex; align-items:center; justify-content:center;
-              opacity:0; transform:scale(.6)}
-  .layer-bank.active .bank-badge{ animation:popIn .22s var(--ease-dec) .26s forwards; }
+              opacity:0; transform:scale(.82)}
+  .bank-badge path{ stroke-dasharray:26; stroke-dashoffset:26; }
+  .layer-bank.active .bank-badge{ animation:popIn .32s var(--ease-dec) .42s forwards; }
+  .layer-bank.active .bank-badge path{ animation:draw .26s var(--ease-dec) .56s forwards; }
   .bank-title{font-size:16px; font-weight:700; color:var(--ink); margin-top:18px; text-align:center;
-              opacity:0; transform:translateY(6px)}
-  .bank-sub{font-size:14px; color:var(--muted); margin-top:6px; opacity:0; transform:translateY(6px)}
-  .layer-bank.active .bank-title{ animation:riseIn .3s var(--ease-dec) .2s forwards; }
-  .layer-bank.active .bank-sub{ animation:riseIn .3s var(--ease-dec) .27s forwards; }
+              opacity:0; transform:translateY(8px)}
+  .bank-sub{font-size:14px; color:var(--muted); margin-top:6px; opacity:0; transform:translateY(8px)}
+  .layer-bank.active .bank-title{ animation:riseIn .42s var(--ease-dec) .5s forwards; }
+  .layer-bank.active .bank-sub{ animation:riseIn .42s var(--ease-dec) .62s forwards; }
 
   @keyframes fadeIn{to{opacity:1}}
   @keyframes draw{to{stroke-dashoffset:0}}
@@ -302,12 +304,12 @@
 <script>
   const SPEC = {
     reveal: 0,
-    toPin: 1000,
-    dots: [1450, 1750, 2050, 2350],
-    check: 2600,
-    toPay: 2900,
-    toBank: 3900,
-    end: 4800
+    toPin: 1800,
+    dots: [2350, 2770, 3190, 3610],
+    check: 3920,
+    toPay: 4350,
+    toBank: 5450,
+    end: 6900
   };
 
   const layers = {

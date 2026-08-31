@@ -1,10 +1,10 @@
 {
   "name": "Reverse Penny Drop — BAV micro-interaction",
-  "description": "Motion spec for the four-state Reverse Penny Drop bank-account-verification card. Only the contents of the inner white card animate; the surrounding screen is static. All times in milliseconds, relative to sequence start. Hard cap: 5000ms.",
-  "version": "1.0.0",
+  "description": "Motion spec for the four-state Reverse Penny Drop bank-account-verification card. Only the contents of the inner white card animate; the surrounding screen is static. All times in milliseconds, relative to sequence start.",
+  "version": "1.1.0",
   "meta": {
-    "totalDuration": 4800,
-    "hardCap": 5000,
+    "totalDuration": 6900,
+    "note": "Duration intentionally relaxed past the original 5000ms cap for a slower, calmer pace with longer holds, per review. Can be recompressed toward 5000ms for the final build.",
     "loop": false,
     "replay": "tap-or-button",
     "reducedMotionFallback": "snap-to-final"
@@ -16,9 +16,9 @@
   },
   "principles": [
     "The inner white card keeps fixed geometry across all four states.",
-    "Transitions overlap slightly so the flow reads as one continuous interaction.",
-    "Motion is limited to opacity, <=6px translate, <=1.15 scale pulses, and SVG stroke-draws.",
-    "No bounce, elastic, confetti, or large-scale motion."
+    "Every state-to-state transition uses one consistent pattern: outgoing content eases up and out (accelerate), incoming content eases up from below and fades in (decelerate), with a slight overlap.",
+    "The green success check draws the same way in the payment circle and the bank badge, threading the two success states into one continuous conclusion.",
+    "Motion is limited to opacity, <=8px translate, <=1.15 scale pulses, and SVG stroke-draws. No bounce, elastic, confetti, or large-scale motion."
   ],
   "phases": [
     {
@@ -26,7 +26,7 @@
       "screen": 1,
       "label": "Choose UPI — content reveals",
       "start": 0,
-      "end": 600,
+      "end": 900,
       "elements": {
         "upiLogo": { "in": { "start": 0, "duration": 320, "opacity": [0, 1], "translateY": [8, 0], "scale": [0.96, 1], "easing": "decelerate" } },
         "appIcons": {
@@ -35,62 +35,62 @@
         }
       }
     },
-    { "id": "s1-hold", "screen": 1, "label": "Hold on Choose UPI", "start": 600, "end": 1000 },
+    { "id": "s1-hold", "screen": 1, "label": "Extended hold on Choose UPI", "start": 900, "end": 1800 },
     {
       "id": "s1-to-s2",
       "from": 1, "to": 2,
       "label": "Choose UPI -> Enter PIN (card fixed, contents swap)",
-      "start": 1000, "end": 1320,
-      "out": { "target": "layer-upi", "start": 1000, "duration": 220, "opacity": [1, 0], "scale": [1, 0.98], "easing": "accelerate" },
-      "in": { "target": "layer-pin", "start": 1120, "duration": 300, "opacity": [0, 1], "translateY": [6, 0], "easing": "decelerate" }
+      "start": 1800, "end": 2260,
+      "out": { "target": "layer-upi", "duration": 340, "opacity": [1, 0], "translateY": [0, 8], "scale": [1, 0.99], "easing": "accelerate" },
+      "in": { "target": "layer-pin", "delay": 80, "duration": 460, "opacity": [0, 1], "translateY": [8, 0], "easing": "decelerate" }
     },
     {
       "id": "s2-pin-entry",
       "screen": 2,
-      "label": "Realistic 4-digit PIN entry — sequential fill with keypress pulse",
-      "start": 1450, "end": 2450,
+      "label": "Realistic 4-digit PIN entry — sequential fill with keypress pulse, ~420ms cadence",
+      "start": 2350, "end": 3790,
       "dots": [
-        { "index": 0, "fillAt": 1450 },
-        { "index": 1, "fillAt": 1750 },
-        { "index": 2, "fillAt": 2050 },
-        { "index": 3, "fillAt": 2350 }
+        { "index": 0, "fillAt": 2350 },
+        { "index": 1, "fillAt": 2770 },
+        { "index": 2, "fillAt": 3190 },
+        { "index": 3, "fillAt": 3610 }
       ],
       "dotFill": { "duration": 180, "opacity": [0, 1], "scale": [0.5, 1.15, 1], "easing": "standard", "colorTo": "#1C2A6B" }
     },
     {
       "id": "s2-check",
       "screen": 2,
-      "label": "Auto-submit beat, then check strokes in",
-      "start": 2600, "end": 2850,
-      "pauseAfterLastDot": 150,
-      "check": { "start": 2600, "duration": 250, "strokeDashoffset": [1, 0], "opacity": [0, 1], "easing": "decelerate" }
+      "label": "Auto-submit beat, then navy check strokes in",
+      "start": 3920, "end": 4200,
+      "check": { "start": 3920, "duration": 280, "strokeDashoffset": [1, 0], "opacity": [0, 1], "easing": "decelerate" }
     },
     {
       "id": "s2-to-s3",
       "from": 2, "to": 3,
-      "label": "PIN complete -> Payment successful (check settles into success)",
-      "start": 2900, "end": 3220,
-      "out": { "target": "layer-pin", "start": 2900, "duration": 220, "opacity": [1, 0], "scale": [1, 0.98], "easing": "accelerate" },
+      "label": "PIN complete -> Payment successful",
+      "start": 4350, "end": 4810,
+      "out": { "target": "layer-pin", "duration": 340, "opacity": [1, 0], "translateY": [0, 8], "easing": "accelerate" },
       "in": {
-        "target": "layer-pay", "start": 3000, "duration": 300, "opacity": [0, 1], "translateY": [6, 0], "easing": "decelerate",
-        "greenCircle": { "start": 3060, "duration": 260, "opacity": [0, 1], "scale": [0.8, 1], "easing": "decelerate" },
-        "greenCheck": { "start": 3160, "duration": 240, "strokeDashoffset": [1, 0], "easing": "decelerate" }
+        "target": "layer-pay", "delay": 80, "duration": 460, "opacity": [0, 1], "translateY": [8, 0], "easing": "decelerate",
+        "greenCircle": { "start": 4470, "duration": 340, "opacity": [0, 1], "scale": [0.8, 1], "easing": "decelerate" },
+        "greenCheck": { "start": 4630, "duration": 300, "strokeDashoffset": [1, 0], "easing": "decelerate" }
       }
     },
-    { "id": "s3-hold", "screen": 3, "label": "Hold on Payment successful", "start": 3220, "end": 3900 },
+    { "id": "s3-hold", "screen": 3, "label": "Hold on Payment successful", "start": 4810, "end": 5450 },
     {
       "id": "s3-to-s4",
       "from": 3, "to": 4,
-      "label": "Payment done -> Bank account verified (natural conclusion)",
-      "start": 3900, "end": 4300,
-      "out": { "target": "layer-pay", "start": 3900, "duration": 220, "opacity": [1, 0], "scale": [1, 0.98], "easing": "accelerate" },
+      "label": "Payment done -> Bank account verified (green check threads through)",
+      "start": 5450, "end": 5950,
+      "out": { "target": "layer-pay", "duration": 340, "opacity": [1, 0], "translateY": [0, 8], "easing": "accelerate" },
       "in": {
-        "target": "layer-bank", "start": 4020, "duration": 320, "opacity": [0, 1], "translateY": [6, 0], "easing": "decelerate",
-        "bankIcon": { "start": 4060, "duration": 300, "opacity": [0, 1], "translateY": [6, 0], "scale": [0.94, 1], "easing": "decelerate" },
-        "greenBadge": { "start": 4260, "duration": 220, "opacity": [0, 1], "scale": [0.6, 1], "easing": "decelerate" },
-        "texts": { "start": 4200, "duration": 300, "opacity": [0, 1], "translateY": [6, 0], "stagger": 70, "easing": "decelerate" }
+        "target": "layer-bank", "delay": 80, "duration": 500, "opacity": [0, 1], "translateY": [8, 0], "easing": "decelerate",
+        "bankIcon": { "start": 5550, "duration": 440, "opacity": [0, 1], "translateY": [8, 0], "scale": [0.96, 1], "easing": "decelerate" },
+        "greenBadge": { "start": 5870, "duration": 320, "opacity": [0, 1], "scale": [0.82, 1], "easing": "decelerate" },
+        "greenBadgeCheck": { "start": 6010, "duration": 260, "strokeDashoffset": [1, 0], "easing": "decelerate" },
+        "texts": { "start": 5950, "duration": 420, "opacity": [0, 1], "translateY": [8, 0], "stagger": 120, "easing": "decelerate" }
       }
     },
-    { "id": "s4-settle", "screen": 4, "label": "Rest on Bank account verification successful", "start": 4300, "end": 4800 }
+    { "id": "s4-settle", "screen": 4, "label": "Rest on Bank account verification successful", "start": 5950, "end": 6900 }
   ]
 }
