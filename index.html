@@ -1,0 +1,370 @@
+<title>Penny Drop Motion</title>
+<meta name="description" content="Four-state Reverse Penny Drop bank-verification micro-interaction">
+<style>
+  :root{
+    --page:#E9EAEE;
+    --phone:#FFFFFF;
+    --ink:#15161B;
+    --sub:#6B6E7B;
+    --muted:#8B8D98;
+    --grey-card:#F5F6F8;
+    --inner:#FFFFFF;
+    --line:#E9EAEE;
+    --step:#C2C4CE;
+    --step-line:#E4E5EA;
+    --primary:#5B4FE9;
+    --dot:#1C2A6B;
+    --green:#2E9E5B;
+    --bank:#5B4FE9;
+    --shadow:0 30px 70px -30px rgba(20,22,35,.35);
+    --ease-std:cubic-bezier(.4,0,.2,1);
+    --ease-dec:cubic-bezier(0,0,.2,1);
+    --ease-acc:cubic-bezier(.4,0,1,1);
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --page:#141519; --shadow:0 30px 80px -30px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{ --page:#141519; --shadow:0 30px 80px -30px rgba(0,0,0,.7); }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--page);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,"Helvetica Neue",Arial,sans-serif;
+    min-height:100vh; margin:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:20px; padding:32px 16px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Device frame (committed light look) ---------- */
+  .phone{
+    width:390px; max-width:100%;
+    background:var(--phone);
+    border-radius:44px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    color:var(--ink);
+    user-select:none;
+    cursor:pointer;
+  }
+  .statusbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 30px 4px; font-size:15px; font-weight:600; color:var(--ink);
+  }
+  .statusbar .sig{display:flex; align-items:center; gap:6px}
+  .content{padding:8px 26px 22px}
+
+  .back{
+    width:40px; height:40px; border-radius:50%;
+    background:#F1F1F5; display:flex; align-items:center; justify-content:center;
+    margin:10px 0 22px;
+  }
+
+  h1{font-size:26px; line-height:1.15; font-weight:700; margin:0 0 8px; letter-spacing:-.3px}
+  .subtitle{font-size:16px; color:var(--sub); margin:0 0 22px}
+
+  /* ---------- Grey container + fixed inner card ---------- */
+  .grey-card{
+    background:var(--grey-card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:16px 16px 14px;
+  }
+  .inner-card{
+    position:relative;
+    background:var(--inner);
+    border-radius:14px;
+    height:212px;
+    box-shadow:0 1px 2px rgba(20,22,35,.04);
+    overflow:hidden;
+  }
+  .refund{
+    text-align:center; font-size:13.5px; color:var(--muted);
+    padding:14px 0 4px;
+  }
+
+  /* ---------- Layers (only these animate) ---------- */
+  .layer{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    opacity:0; transform:translateY(6px);
+    transition:opacity .26s var(--ease-acc), transform .3s var(--ease-acc);
+    pointer-events:none; padding:18px;
+  }
+  .layer.active{
+    opacity:1; transform:translateY(0);
+    transition:opacity .3s var(--ease-dec), transform .32s var(--ease-dec);
+  }
+
+  /* ---- Layer 1: Choose UPI ---- */
+  .upi-logo{ opacity:0; transform:translateY(8px) scale(.96); }
+  .layer-upi.reveal .upi-logo{
+    opacity:1; transform:none;
+    transition:opacity .32s var(--ease-dec) 0s, transform .32s var(--ease-dec) 0s;
+  }
+  .app-row{display:flex; gap:22px; margin-top:24px}
+  .app{ width:46px; height:46px; border-radius:50%; opacity:0; transform:translateY(6px) scale(.9);
+        display:flex; align-items:center; justify-content:center; overflow:hidden;}
+  .layer-upi.reveal .app{
+    opacity:1; transform:none;
+    transition:opacity .3s var(--ease-dec), transform .3s var(--ease-dec);
+  }
+  .layer-upi.reveal .app:nth-child(1){transition-delay:.16s}
+  .layer-upi.reveal .app:nth-child(2){transition-delay:.25s}
+  .layer-upi.reveal .app:nth-child(3){transition-delay:.34s}
+  .layer-upi.reveal .app:nth-child(4){transition-delay:.43s}
+  .app.cred{background:#0A0A0A}
+  .app.paytm{background:#fff; border:1px solid #EDEEF2}
+  .app.gpay{background:#fff; border:1px solid #EDEEF2}
+  .app.phonepe{background:#5F259F}
+
+  /* ---- Layer 2: Enter PIN ---- */
+  .pin-title{font-size:15px; font-weight:700; letter-spacing:.4px; color:var(--ink); margin-bottom:20px}
+  .dots{display:flex; gap:16px}
+  .dot{width:15px; height:15px; border-radius:50%; background:transparent; border:1.6px solid #C7CAD6;}
+  .dot.filled{ background:var(--dot); border-color:var(--dot); animation:dotPulse .18s var(--ease-std); }
+  @keyframes dotPulse{ 0%{transform:scale(.5); opacity:.4} 60%{transform:scale(1.15)} 100%{transform:scale(1); opacity:1} }
+  .pin-check{ margin-top:20px; opacity:0; }
+  .pin-check.show{ animation:fadeIn .2s var(--ease-dec) forwards; }
+  .pin-check path{ stroke-dasharray:24; stroke-dashoffset:24; }
+  .pin-check.show path{ animation:draw .28s var(--ease-dec) .04s forwards; }
+
+  /* ---- Layer 3: Payment success ---- */
+  .pay-text{font-size:16px; color:var(--ink); margin-bottom:20px}
+  .green-circle{ width:64px; height:64px; border-radius:50%; background:var(--green);
+                 display:flex; align-items:center; justify-content:center; opacity:0; transform:scale(.8); }
+  .layer-pay.active .green-circle{ animation:popIn .26s var(--ease-dec) .06s forwards; }
+  .green-circle path{ stroke-dasharray:26; stroke-dashoffset:26; }
+  .layer-pay.active .green-circle path{ animation:draw .24s var(--ease-dec) .16s forwards; }
+
+  /* ---- Layer 4: Bank verified ---- */
+  .bank-wrap{position:relative; opacity:0; transform:translateY(6px) scale(.94)}
+  .layer-bank.active .bank-wrap{ animation:riseIn .3s var(--ease-dec) .04s forwards; }
+  .bank-badge{position:absolute; right:-4px; bottom:-2px; width:22px; height:22px; border-radius:50%;
+              background:var(--green); border:2.5px solid #fff; display:flex; align-items:center; justify-content:center;
+              opacity:0; transform:scale(.6)}
+  .layer-bank.active .bank-badge{ animation:popIn .22s var(--ease-dec) .26s forwards; }
+  .bank-title{font-size:16px; font-weight:700; color:var(--ink); margin-top:18px; text-align:center;
+              opacity:0; transform:translateY(6px)}
+  .bank-sub{font-size:14px; color:var(--muted); margin-top:6px; opacity:0; transform:translateY(6px)}
+  .layer-bank.active .bank-title{ animation:riseIn .3s var(--ease-dec) .2s forwards; }
+  .layer-bank.active .bank-sub{ animation:riseIn .3s var(--ease-dec) .27s forwards; }
+
+  @keyframes fadeIn{to{opacity:1}}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  @keyframes popIn{to{opacity:1; transform:scale(1)}}
+  @keyframes riseIn{to{opacity:1; transform:none}}
+
+  /* ---------- Steps ---------- */
+  .steps{margin:26px 4px 0; display:flex; flex-direction:column; gap:0}
+  .step{display:flex; align-items:flex-start; gap:16px; position:relative; padding-bottom:26px}
+  .step:last-child{padding-bottom:0}
+  .step .num{ width:30px; height:30px; flex:0 0 30px; border-radius:50%; border:1.4px solid var(--step-line);
+              display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--step); background:#fff; z-index:1}
+  .step:not(:last-child) .num::after{ content:""; position:absolute; left:14.5px; top:30px; bottom:0; width:1.4px; background:var(--step-line); }
+  .step .txt{font-size:16.5px; color:var(--ink); padding-top:4px}
+
+  .foot-note{ text-align:center; font-size:14px; color:var(--muted); margin:28px 0 14px; }
+  .verify-btn{ width:100%; border:0; background:var(--primary); color:#fff; font-size:17px; font-weight:600;
+               padding:17px; border-radius:14px; font-family:inherit; }
+  .powered{ display:flex; align-items:center; justify-content:center; gap:7px; margin-top:16px; font-size:14px; font-weight:600; color:#5A5C68; }
+
+  /* ---------- Replay control (outside the device) ---------- */
+  .replay{ display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(140,140,150,.35);
+           background:transparent; color:var(--muted); font-family:inherit; font-size:13px; font-weight:600;
+           padding:8px 16px; border-radius:999px; cursor:pointer; opacity:.55; transition:opacity .2s; }
+  .replay:hover{opacity:1}
+  .replay svg{transition:transform .5s var(--ease-std)}
+  .replay.spin svg{transform:rotate(-360deg)}
+
+  @media (prefers-reduced-motion: reduce){
+    .layer,.upi-logo,.app,.dot,.pin-check,.green-circle,.bank-wrap,.bank-badge,.bank-title,.bank-sub,.replay svg{
+      transition:none!important; animation:none!important;
+    }
+  }
+</style>
+
+<div class="phone" id="phone">
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="sig">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="var(--ink)"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><path d="M8.5 11.2 1 4.2a10.6 10.6 0 0 1 15 0l-7.5 7z" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x="1" y="1" width="21" height="11" rx="3" stroke="var(--ink)" stroke-width="1.2"/><rect x="3" y="3" width="17" height="7" rx="1.5" fill="var(--ink)"/><rect x="23.5" y="4.5" width="1.8" height="4" rx=".9" fill="var(--ink)"/></svg>
+    </span>
+  </div>
+
+  <div class="content">
+    <div class="back">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#6C6E7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <h1>Verify Your Bank with UPI</h1>
+    <p class="subtitle">Pay ₹1 to verify your bank account</p>
+
+    <div class="grey-card">
+      <div class="inner-card">
+
+        <!-- Layer 1: Choose UPI -->
+        <div class="layer layer-upi" id="layer-upi">
+          <svg class="upi-logo" width="150" height="52" viewBox="0 0 150 52" fill="none">
+            <text x="0" y="34" font-family="Arial, sans-serif" font-weight="700" font-style="italic" font-size="38" fill="#6E7079" letter-spacing="1">UPI</text>
+            <path d="M96 6 L118 26 L96 46 Z" fill="#F5821F"/>
+            <path d="M108 6 L130 26 L108 46 Z" fill="#0C8140"/>
+            <text x="1" y="49" font-family="Arial, sans-serif" font-weight="600" font-size="8.2" letter-spacing="1.4" fill="#8A8C95">UNIFIED PAYMENTS INTERFACE</text>
+          </svg>
+          <div class="app-row">
+            <div class="app cred">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.4 8.2 8 11 4.6-2.8 8-6 8-11V5l-8-3z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><text x="12" y="15" font-family="Arial" font-weight="700" font-size="6" fill="#fff" text-anchor="middle">CRED</text></svg>
+            </div>
+            <div class="app paytm">
+              <svg width="34" height="20" viewBox="0 0 60 34" fill="none"><text x="0" y="16" font-family="Arial, sans-serif" font-weight="800" font-size="15" fill="#002E6E">Pay</text><text x="30" y="16" font-family="Arial, sans-serif" font-weight="800" font-size="15" fill="#00BAF2">tm</text><text x="12" y="30" font-family="Arial" font-weight="800" font-size="11" fill="#002E6E" letter-spacing="1">UPI</text></svg>
+            </div>
+            <div class="app gpay">
+              <svg width="30" height="30" viewBox="0 0 48 48" fill="none">
+                <path d="M24 20v8h11.3c-.5 2.6-2 4.8-4.3 6.3l7 5.4C42 35.6 44 30.3 44 24c0-1.4-.1-2.7-.4-4H24z" fill="#4285F4"/>
+                <path d="M24 44c5.9 0 10.9-2 14.5-5.3l-7-5.4C29.6 34.5 27 35.3 24 35.3c-5.7 0-10.5-3.8-12.2-9l-7.3 5.6C8.1 39.6 15.4 44 24 44z" fill="#34A853"/>
+                <path d="M11.8 26.3c-.4-1.3-.7-2.7-.7-4.3s.2-3 .7-4.3l-7.3-5.6C3 15.1 2 19.4 2 24s1 8.9 2.5 12.9l7.3-5.6z" fill="#FBBC05"/>
+                <path d="M24 8.7c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 2.1 29.9 0 24 0 15.4 0 8.1 4.4 4.5 11.1l7.3 5.6C13.5 12.5 18.3 8.7 24 8.7z" fill="#EA4335"/>
+              </svg>
+            </div>
+            <div class="app phonepe">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><text x="12" y="17" font-family="'Noto Sans Devanagari', Arial" font-weight="700" font-size="15" fill="#fff" text-anchor="middle">पे</text></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer 2: Enter PIN -->
+        <div class="layer layer-pin" id="layer-pin">
+          <div class="pin-title">ENTER 4-DIGIT UPI PIN</div>
+          <div class="dots">
+            <div class="dot" data-i="0"></div>
+            <div class="dot" data-i="1"></div>
+            <div class="dot" data-i="2"></div>
+            <div class="dot" data-i="3"></div>
+          </div>
+          <svg class="pin-check" id="pin-check" width="30" height="24" viewBox="0 0 30 24" fill="none"><path d="M4 13l7 7L26 4" stroke="var(--dot)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+
+        <!-- Layer 3: Payment success -->
+        <div class="layer layer-pay" id="layer-pay">
+          <div class="pay-text">₹1 Payment successful</div>
+          <div class="green-circle">
+            <svg width="30" height="24" viewBox="0 0 30 24" fill="none"><path d="M4 13l7 7L26 4" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+        <!-- Layer 4: Bank verified -->
+        <div class="layer layer-bank" id="layer-bank">
+          <div class="bank-wrap">
+            <svg width="56" height="56" viewBox="0 0 48 48" fill="none">
+              <path d="M24 5 6 14h36L24 5z" fill="var(--bank)"/>
+              <rect x="9" y="17" width="4" height="16" rx="1" fill="var(--bank)"/>
+              <rect x="17" y="17" width="4" height="16" rx="1" fill="var(--bank)"/>
+              <rect x="27" y="17" width="4" height="16" rx="1" fill="var(--bank)"/>
+              <rect x="35" y="17" width="4" height="16" rx="1" fill="var(--bank)"/>
+              <rect x="6" y="35" width="36" height="4" rx="1.5" fill="var(--bank)"/>
+            </svg>
+            <div class="bank-badge">
+              <svg width="12" height="10" viewBox="0 0 30 24" fill="none"><path d="M4 13l7 7L26 4" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="bank-title">Bank account verification successful</div>
+          <div class="bank-sub">Congratulations</div>
+        </div>
+
+      </div>
+      <div class="refund">₹1 will be refunded within 48 hours.</div>
+    </div>
+
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div class="txt">Choose any UPI app from the list</div></div>
+      <div class="step"><div class="num">2</div><div class="txt">Pay ₹1 on the chosen UPI app</div></div>
+      <div class="step"><div class="num">3</div><div class="txt">Complete the payment and come back</div></div>
+    </div>
+
+    <div class="foot-note">This verification is required as per RBI guidelines</div>
+    <button class="verify-btn">Verify Account</button>
+    <div class="powered">
+      <svg width="16" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.4 8.2 8 11 4.6-2.8 8-6 8-11V5l-8-3z" fill="#DFF4E7"/><path d="M8.5 12l2.5 2.5L16 9" stroke="#2E9E5B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      powered by HyperVerge
+    </div>
+  </div>
+</div>
+
+<button class="replay" id="replay">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.3-5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 3v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Replay
+</button>
+
+<script>
+  const SPEC = {
+    reveal: 0,
+    toPin: 1000,
+    dots: [1450, 1750, 2050, 2350],
+    check: 2600,
+    toPay: 2900,
+    toBank: 3900,
+    end: 4800
+  };
+
+  const layers = {
+    upi: document.getElementById('layer-upi'),
+    pin: document.getElementById('layer-pin'),
+    pay: document.getElementById('layer-pay'),
+    bank: document.getElementById('layer-bank')
+  };
+  const dots = [...document.querySelectorAll('.dot')];
+  const pinCheck = document.getElementById('pin-check');
+  const replayBtn = document.getElementById('replay');
+  const phone = document.getElementById('phone');
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let timers = [];
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const show = key => { Object.values(layers).forEach(l => l.classList.remove('active')); layers[key].classList.add('active'); };
+
+  function reset(){
+    timers.forEach(clearTimeout); timers = [];
+    Object.values(layers).forEach(l => l.classList.remove('active'));
+    layers.upi.classList.remove('reveal');
+    dots.forEach(d => d.classList.remove('filled'));
+    pinCheck.classList.remove('show');
+  }
+
+  function play(){
+    reset();
+    if (reduced){ show('bank'); layers.bank.classList.add('active'); return; }
+
+    // Screen 1 — Choose UPI reveals
+    show('upi');
+    requestAnimationFrame(() => at(20, () => layers.upi.classList.add('reveal')));
+
+    // Screen 1 -> 2
+    at(SPEC.toPin, () => show('pin'));
+
+    // Realistic PIN entry — sequential fill
+    SPEC.dots.forEach((t, i) => at(t, () => dots[i].classList.add('filled')));
+
+    // Auto-submit beat -> check
+    at(SPEC.check, () => pinCheck.classList.add('show'));
+
+    // Screen 2 -> 3 (payment success)
+    at(SPEC.toPay, () => show('pay'));
+
+    // Screen 3 -> 4 (bank verified)
+    at(SPEC.toBank, () => show('bank'));
+
+    at(SPEC.end, () => { /* rest on final state */ });
+  }
+
+  replayBtn.addEventListener('click', () => {
+    replayBtn.classList.remove('spin'); void replayBtn.offsetWidth; replayBtn.classList.add('spin');
+    play();
+  });
+  phone.addEventListener('click', play);
+
+  play();
+</script>
