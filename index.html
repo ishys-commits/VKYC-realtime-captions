@@ -66,11 +66,15 @@
   .subtitle{font-size:16px; color:var(--sub); margin:0 0 22px}
 
   /* ---------- Grey container + fixed inner card ---------- */
+  .refund{
+    text-align:center; font-size:14px; color:var(--muted);
+    margin:4px 0 16px;
+  }
   .grey-card{
     background:var(--grey-card);
     border:1px solid var(--line);
     border-radius:20px;
-    padding:16px 16px 14px;
+    padding:16px;
   }
   .inner-card{
     position:relative;
@@ -79,10 +83,6 @@
     height:212px;
     box-shadow:0 1px 2px rgba(20,22,35,.04);
     overflow:hidden;
-  }
-  .refund{
-    text-align:center; font-size:13.5px; color:var(--muted);
-    padding:14px 0 4px;
   }
 
   /* ---------- Layers (only these animate) ---------- */
@@ -206,6 +206,8 @@
     <h1>Verify Your Bank with UPI</h1>
     <p class="subtitle">Pay ₹1 to verify your bank account</p>
 
+    <div class="refund">₹1 will be refunded within 48 hours</div>
+
     <div class="grey-card">
       <div class="inner-card">
 
@@ -278,7 +280,6 @@
         </div>
 
       </div>
-      <div class="refund">₹1 will be refunded within 48 hours.</div>
     </div>
 
     <div class="steps">
