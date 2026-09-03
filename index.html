@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Verify Your Bank with UPI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  /* =========================================================================
+     REVERSE PENNY DROP (RPD) — UPI Bank Verification micro-interaction
+     Static UI is fixed. Only the content INSIDE the inner white card animates.
+     Motion system: one shared easing + consistent durations, driven by a
+     single timeline (see <script> at the bottom). Total sequence < 5s, loops.
+     ========================================================================= */
+
+  /* ---- Motion tokens (change these to retune the whole sequence) ---------- */
+  :root{
+    --ease: cubic-bezier(0.22, 0.61, 0.36, 1);      /* calm ease-out */
+    --ease-soft: cubic-bezier(0.33, 0.00, 0.20, 1);  /* symmetric settle */
+    --dur-fade: 340ms;      /* standard content fade */
+    --dur-move: 420ms;      /* the pay -> bank check carry */
+
+    /* ---- Colour tokens (from the reference) ---- */
+    --ink:      #17171C;    /* titles */
+    --ink-2:    #2B2B33;    /* step labels */
+    --grey:     #6B6B76;    /* subtitle */
+    --grey-2:   #8C8C97;    /* refund / rbi / footer */
+    --card-bg:  #F4F4F7;    /* outer light-grey card */
+    --white:    #FFFFFF;
+    --hair:     #ECECEF;    /* inner card border */
+    --purple:   #5B4CF0;    /* CTA + bank icon */
+    --pin-blue: #1E3A8C;    /* UPI pin dots + check */
+    --green:    #2E9E5B;    /* success */
+    --step-num: #9A9AA5;
+    --step-ring:#E4E4EA;
+  }
+
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    background:var(--white);
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    display:flex;
+    justify-content:center;
+  }
+
+  /* The product screen fills the viewport (mobile-portrait column, no frame). */
+  .app{
+    position:relative;
+    width:100%;
+    max-width:430px;
+    min-height:100vh;
+    min-height:100dvh;
+    background:var(--white);
+    padding:0 30px 22px;
+    display:flex;
+    flex-direction:column;
+    cursor:pointer;               /* click anywhere to replay */
+    overflow:hidden;
+  }
+
+  /* ---------------- Status bar ---------------- */
+  .statusbar{
+    height:54px;
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 2px;
+  }
+  .statusbar .time{ font-weight:600; font-size:16px; letter-spacing:.2px; color:var(--ink); }
+  .statusbar .sysicons{ display:flex; align-items:center; gap:7px; }
+
+  /* ---------------- Back button ---------------- */
+  .back{
+    width:46px; height:46px; border-radius:50%;
+    background:#F1F0F5; border:none; margin:8px 0 0;
+    display:flex; align-items:center; justify-content:center;
+    flex:0 0 auto; padding:0;
+  }
+
+  /* ---------------- Header ---------------- */
+  .title{
+    font-size:29px; font-weight:700; line-height:1.15; letter-spacing:-.5px;
+    margin:26px 0 0; color:var(--ink);
+  }
+  .subtitle{
+    font-size:17px; font-weight:400; line-height:1.3; color:var(--grey);
+    margin:12px 0 0;
+  }
+
+  /* ---------------- Outer light-grey card ---------------- */
+  .outer-card{
+    background:var(--card-bg);
+    border-radius:22px;
+    padding:20px;
+    margin:26px 0 0;
+  }
+  /* Inner white card — FIXED SIZE. Only its inner content changes. */
+  .inner-card{
+    position:relative;
+    background:var(--white);
+    border:1px solid var(--hair);
+    border-radius:16px;
+    height:236px;
+    overflow:hidden;
+  }
+  /* Each state is a centred layer that cross-fades with the others. */
+  .state{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    opacity:0;
+    transition:opacity var(--dur-fade) var(--ease);
+    pointer-events:none;
+    padding:16px;
+  }
+
+  /* ===== STATE 1 — UPI selection ===== */
+  .upi-logo{ width:160px; height:auto; opacity:0; transform:translateY(9px);
+    transition:opacity var(--dur-fade) var(--ease), transform var(--dur-fade) var(--ease); }
+  .upi-apps{ display:flex; align-items:center; justify-content:center; gap:22px; margin-top:26px; }
+  .upi-apps .appicon{ width:44px; height:44px; opacity:0; transform:translateY(9px);
+    transition:opacity var(--dur-fade) var(--ease), transform var(--dur-fade) var(--ease); }
+
+  /* ===== STATE 2 — PIN entry ===== */
+  .pin-title{ font-size:16px; font-weight:600; letter-spacing:.4px; color:var(--ink);
+    opacity:0; transform:translateY(8px);
+    transition:opacity var(--dur-fade) var(--ease), transform var(--dur-fade) var(--ease); }
+  .pin-dots{ display:flex; gap:20px; margin-top:26px; }
+  .pin-dots .dot{
+    width:19px; height:19px; border-radius:50%;
+    background:var(--pin-blue);
+    opacity:0; transform:scale(.4);
+    transition:opacity 200ms var(--ease), transform 220ms var(--ease);
+  }
+  .pin-check{ margin-top:20px; opacity:0; transform:scale(.6);
+    transition:opacity 260ms var(--ease), transform 300ms var(--ease); }
+
+  /* ===== STATE 3 text — "₹1 Payment successful" (sits in upper third) ===== */
+  .state-pay{ justify-content:flex-start; padding-top:60px; }
+  .pay-title{ font-size:17px; font-weight:500; color:var(--ink-2);
+    opacity:0; transform:translateY(8px);
+    transition:opacity var(--dur-fade) var(--ease), transform var(--dur-fade) var(--ease); }
+
+  /* ===== STATE 4 — bank verification ===== */
+  .bank-glyph{ width:74px; height:74px; opacity:0; transform:scale(.82);
+    transition:opacity var(--dur-move) var(--ease), transform var(--dur-move) var(--ease);
+    margin-bottom:14px; }
+  .bank-title{ font-size:14px; font-weight:600; color:var(--ink); text-align:center;
+    white-space:nowrap; line-height:1.3;
+    opacity:0; transform:translateY(8px);
+    transition:opacity var(--dur-fade) var(--ease), transform var(--dur-fade) var(--ease); }
+  .bank-sub{ font-size:15px; font-weight:400; color:var(--grey-2); margin-top:6px;
+    opacity:0; transform:translateY(8px);
+    transition:opacity var(--dur-fade) var(--ease), transform var(--dur-fade) var(--ease); }
+
+  /* ===== Shared green success check =====
+     ONE element. In pay state it is big + centred; transitioning to bank it
+     shrinks and slides to the bank building's corner, BECOMING the badge.
+     Size is animated via width/height (not transform) so the white ring
+     (box-shadow) stays a constant thickness at both scales. */
+  .gcheck{
+    position:absolute; left:50%; top:59%;
+    width:80px; height:80px; margin:-40px 0 0 -40px;   /* centred (pay) */
+    border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 0 4px #fff;                          /* separates from bank glyph */
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transform:scale(.6);
+    transition:opacity 300ms var(--ease), transform var(--dur-move) var(--ease),
+               left var(--dur-move) var(--ease), top var(--dur-move) var(--ease),
+               width var(--dur-move) var(--ease), height var(--dur-move) var(--ease),
+               margin var(--dur-move) var(--ease);
+    z-index:3;
+  }
+  .gcheck svg{ width:58%; height:58%; }
+  .gcheck.tick-in{ opacity:1; transform:scale(1); }
+
+  /* ---------------- Refund line ---------------- */
+  .refund{ text-align:center; font-size:14px; color:var(--grey-2); margin:16px 0 0; }
+
+  /* ---------------- Steps ---------------- */
+  .steps{ margin:26px 4px 0; }
+  .step{ position:relative; display:flex; align-items:center; min-height:52px; }
+  .step .num{
+    width:38px; height:38px; border-radius:50%;
+    border:1.5px solid var(--step-ring); background:var(--white);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:500; color:var(--step-num);
+    flex:0 0 auto; z-index:1;
+  }
+  .step:not(:last-child) .num::after{
+    content:""; position:absolute; left:18.25px; top:38px;
+    width:1.5px; height:14px; background:var(--step-ring);
+  }
+  .step .label{ margin-left:16px; font-size:17px; font-weight:400; color:var(--ink-2); line-height:1.25; }
+
+  /* ---------------- RBI + CTA + footer ---------------- */
+  .spacer{ flex:1 1 auto; min-height:22px; }
+  .rbi{ text-align:center; font-size:14.5px; color:var(--grey-2); margin:0 0 16px; }
+  .cta{
+    width:100%; height:60px; border:none; border-radius:15px;
+    background:var(--purple); color:#fff; font-family:inherit;
+    font-size:18px; font-weight:600; letter-spacing:.1px; cursor:pointer;
+  }
+  .footer{
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    margin-top:16px; font-size:14px; font-weight:500; color:var(--grey-2);
+  }
+
+  /* =========================================================================
+     PHASE STATE MACHINE — the timeline JS toggles a phase-* class on .app.
+     ========================================================================= */
+
+  /* State 1 in */
+  .app.phase-upi .state-upi, .app.phase-1 .state-upi{ opacity:1; }
+  .app.phase-upi .upi-logo{ opacity:1; transform:none; }
+  .app.phase-upi .upi-apps .appicon{ opacity:1; transform:none; }
+  /* staggered icon entrance */
+  .app.phase-upi .upi-apps .appicon:nth-child(1){ transition-delay:120ms; }
+  .app.phase-upi .upi-apps .appicon:nth-child(2){ transition-delay:200ms; }
+  .app.phase-upi .upi-apps .appicon:nth-child(3){ transition-delay:280ms; }
+  .app.phase-upi .upi-apps .appicon:nth-child(4){ transition-delay:360ms; }
+  .app.phase-upi .upi-logo{ transition-delay:40ms; }
+
+  /* State 2 — PIN */
+  .app.phase-pin .state-pin{ opacity:1; }
+  .app.phase-pin .pin-title{ opacity:1; transform:none; transition-delay:60ms; }
+  .app.phase-pin .pin-dots .dot{ opacity:1; transform:scale(1); }
+  /* sequential fill — a real person typing four digits */
+  .app.phase-pin .pin-dots .dot:nth-child(1){ transition-delay:280ms; }
+  .app.phase-pin .pin-dots .dot:nth-child(2){ transition-delay:480ms; }
+  .app.phase-pin .pin-dots .dot:nth-child(3){ transition-delay:680ms; }
+  .app.phase-pin .pin-dots .dot:nth-child(4){ transition-delay:880ms; }
+  .app.phase-pin .pin-check{ opacity:1; transform:scale(1); transition-delay:1080ms; }
+
+  /* State 3 — payment success (text + shared green check) */
+  .app.phase-pay .state-pay{ opacity:1; }
+  .app.phase-pay .pay-title{ opacity:1; transform:none; transition-delay:40ms; }
+
+  /* State 4 — bank verification */
+  .app.phase-bank .state-bank{ opacity:1; }
+  .app.phase-bank .bank-glyph{ opacity:1; transform:none; }
+  .app.phase-bank .bank-title{ opacity:1; transform:none; transition-delay:180ms; }
+  .app.phase-bank .bank-sub{ opacity:1; transform:none; transition-delay:260ms; }
+  /* the green check shrinks + slides to become the bank badge (continuity) */
+  .app.phase-bank .gcheck{
+    left:59.5%; top:45%;
+    width:30px; height:30px; margin:-15px 0 0 -15px;
+  }
+
+  /* On loop restart, snap the shared check back instantly (no grow-while-fade) */
+  .app.resetting .gcheck{ transition:none !important; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition-duration:1ms !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="app phase-upi" id="app">
+
+    <!-- ===================== STATUS BAR ===================== -->
+    <div class="statusbar">
+      <span class="time">9:41</span>
+      <span class="sysicons">
+        <!-- cellular -->
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+          <rect x="0"  y="8"  width="3" height="4"  rx="1" fill="#17171C"/>
+          <rect x="5"  y="5.5" width="3" height="6.5" rx="1" fill="#17171C"/>
+          <rect x="10" y="3"  width="3" height="9"  rx="1" fill="#17171C"/>
+          <rect x="15" y="0"  width="3" height="12" rx="1" fill="#17171C"/>
+        </svg>
+        <!-- wifi -->
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="#17171C">
+          <path d="M8.5 2.2c2.6 0 5 1 6.8 2.7l1.4-1.5A11.4 11.4 0 0 0 8.5.2 11.4 11.4 0 0 0 .3 3.4l1.4 1.5A9.4 9.4 0 0 1 8.5 2.2Z"/>
+          <path d="M8.5 6c1.5 0 2.9.6 3.9 1.6l1.4-1.5A8 8 0 0 0 8.5 3.8 8 8 0 0 0 3.2 6.1l1.4 1.5A5.5 5.5 0 0 1 8.5 6Z"/>
+          <path d="M8.5 9.5 10.8 7A5 5 0 0 0 8.5 7 5 5 0 0 0 6.2 7Z"/>
+        </svg>
+        <!-- battery -->
+        <svg width="26" height="13" viewBox="0 0 26 13" fill="none">
+          <rect x="1" y="1" width="21" height="11" rx="3" stroke="#17171C" stroke-opacity=".4" fill="none"/>
+          <rect x="2.6" y="2.6" width="17.8" height="7.8" rx="1.8" fill="#17171C"/>
+          <rect x="23.5" y="4.3" width="1.8" height="4.4" rx="1" fill="#17171C" fill-opacity=".4"/>
+        </svg>
+      </span>
+    </div>
+
+    <!-- ===================== BACK BUTTON ===================== -->
+    <button class="back" aria-label="Back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M15 5l-7 7 7 7" stroke="#5A4E70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <!-- ===================== HEADER ===================== -->
+    <h1 class="title">Verify Your Bank with UPI</h1>
+    <p class="subtitle">Pay ₹1 to verify your bank account</p>
+
+    <!-- ===================== CARD (animated content) ===================== -->
+    <div class="outer-card">
+      <div class="inner-card" id="innerCard">
+
+        <!-- STATE 1 : UPI selection -->
+        <div class="state state-upi">
+          <!-- UPI / Unified Payments Interface logo -->
+          <svg class="upi-logo" viewBox="0 0 200 92" fill="none" aria-label="UPI Unified Payments Interface">
+            <text x="4" y="54" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="700"
+                  font-style="italic" letter-spacing="-2" fill="#6C6D71">UPI</text>
+            <!-- flag arrow: saffron over green, pointing right -->
+            <polygon points="150,10 186,32 150,32" fill="#F58220"/>
+            <polygon points="150,32 186,32 150,54" fill="#0F9D58"/>
+            <text x="100" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+                  font-size="10" font-weight="700" letter-spacing="1.4" fill="#6C6D71">UNIFIED PAYMENTS INTERFACE</text>
+          </svg>
+
+          <div class="upi-apps">
+            <!-- CRED -->
+            <svg class="appicon" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="22" fill="#0A0A0A"/>
+              <path d="M22 10l9 5.2v10.4c0 5.4-4 8.1-9 9.4-5-1.3-9-4-9-9.4V15.2L22 10Z"
+                    fill="none" stroke="#fff" stroke-width="1.6"/>
+              <path d="M25.7 19.2c-1-.7-2.3-1.1-3.7-1.1-2.9 0-4.9 1.8-4.9 4.4s2 4.4 4.9 4.4c1.4 0 2.7-.4 3.7-1.1"
+                    fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+
+            <!-- Paytm UPI -->
+            <svg class="appicon" viewBox="0 0 44 44">
+              <text x="22" y="23" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11.5" font-weight="800" fill="#00B9F1">pay<tspan fill="#012A70">tm</tspan></text>
+              <!-- small heart accent -->
+              <path d="M33 12.4c1.1 0 1.8 1.2 1.2 2.2l-2 3-2-3c-.6-1 .1-2.2 1.2-2.2.4 0 .6.2.8.4.2-.2.4-.4.8-.4Z" fill="#EE3E37"/>
+              <text x="22" y="35" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="800" letter-spacing="1" fill="#012A70">UPI</text>
+            </svg>
+
+            <!-- Google Pay -->
+            <svg class="appicon" viewBox="0 0 44 44">
+              <!-- 4-colour overlapping mark (Google Pay) -->
+              <path d="M31 22c0 5-4 9-9 9-2 0-3.9-.7-5.4-1.8l3.2-3.2c.65.4 1.4.6 2.2.6 2.65 0 4.8-2.15 4.8-4.8H31Z" fill="#4285F4"/>
+              <path d="M31 22h-4.2c0-2.65-2.15-4.8-4.8-4.8-.8 0-1.55.2-2.2.6l-3.2-3.2A8.96 8.96 0 0 1 22 13c5 0 9 4 9 9Z" fill="#EA4335"/>
+              <path d="M19.8 17.8c-1.15.65-2 1.8-2.3 3.15l-4.1-1.6A9 9 0 0 1 16.6 14.6l3.2 3.2Z" fill="#FBBC04"/>
+              <path d="M17.2 22c0 .8.2 1.55.6 2.2l-3.2 3.2A8.96 8.96 0 0 1 13 22c0-1.1.2-2.15.55-3.1l4.1 1.6c-.28.5-.45 1.05-.45 1.65Z" fill="#34A853"/>
+            </svg>
+
+            <!-- PhonePe -->
+            <svg class="appicon" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="22" fill="#5F259F"/>
+              <text x="22" y="30" text-anchor="middle" font-family="'Noto Sans Devanagari', sans-serif"
+                    font-size="21" font-weight="600" fill="#fff">पे</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- STATE 2 : UPI PIN -->
+        <div class="state state-pin">
+          <div class="pin-title">ENTER 4-DIGIT UPI PIN</div>
+          <div class="pin-dots">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <div class="pin-check">
+            <svg width="34" height="24" viewBox="0 0 34 24" fill="none">
+              <path d="M3 12l9 9L31 3" stroke="#1E3A8C" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- STATE 3 : payment success (text only; check is the shared .gcheck) -->
+        <div class="state state-pay">
+          <div class="pay-title">₹1 Payment successful</div>
+        </div>
+
+        <!-- STATE 4 : bank verification success -->
+        <div class="state state-bank">
+          <svg class="bank-glyph" viewBox="0 0 74 74" fill="none">
+            <!-- roof / pediment -->
+            <path d="M37 10 61 22H13L37 10Z" fill="#5B4CF0"/>
+            <!-- columns -->
+            <rect x="17" y="27" width="5.5" height="20" rx="1.5" fill="#5B4CF0"/>
+            <rect x="27.5" y="27" width="5.5" height="20" rx="1.5" fill="#5B4CF0"/>
+            <rect x="41" y="27" width="5.5" height="20" rx="1.5" fill="#5B4CF0"/>
+            <rect x="51.5" y="27" width="5.5" height="20" rx="1.5" fill="#5B4CF0"/>
+            <!-- base -->
+            <rect x="12" y="50" width="50" height="6" rx="2" fill="#5B4CF0"/>
+            <!-- (green check badge is the shared .gcheck element, which lands here) -->
+          </svg>
+          <div class="bank-title">Bank account verification successful</div>
+          <div class="bank-sub">Congratulations</div>
+        </div>
+
+        <!-- SHARED green success check (state 3 big -> state 4 badge) -->
+        <div class="gcheck" id="gcheck">
+          <svg viewBox="0 0 40 40" fill="none">
+            <path d="M11 20.5l6 6 12.5-13" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+      </div><!-- /inner-card -->
+    </div><!-- /outer-card -->
+
+    <!-- ===================== REFUND LINE ===================== -->
+    <p class="refund">₹1 will be refunded within 48 hours</p>
+
+    <!-- ===================== STEPS ===================== -->
+    <div class="steps">
+      <div class="step"><div class="num">1</div><div class="label">Choose any UPI app to pay ₹1</div></div>
+      <div class="step"><div class="num">2</div><div class="label">Pay ₹1 on the selected UPI app</div></div>
+      <div class="step"><div class="num">3</div><div class="label">Complete the payment &amp; come back</div></div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <!-- ===================== RBI + CTA + FOOTER ===================== -->
+    <p class="rbi">This verification is required as per RBI guidelines</p>
+    <button class="cta">Verify Account</button>
+    <div class="footer">
+      <svg width="17" height="19" viewBox="0 0 17 19" fill="none">
+        <path d="M8.5 1 15 3.4v5.2c0 4.2-2.8 7-6.5 8.4C4.8 15.6 2 12.8 2 8.6V3.4L8.5 1Z"
+              fill="none" stroke="#2E9E5B" stroke-width="1.4"/>
+        <path d="M5.7 9.2l2 2 3.8-4" stroke="#2E9E5B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>powered by <b style="font-weight:700;color:#5A5A64">HyperVerge</b></span>
+    </div>
+
+  </div><!-- /app -->
+
+<script>
+/* =========================================================================
+   TIMELINE  —  one modular controller. Edit MARKS (ms) to retune rhythm.
+   Total run < 5000ms, then a short hold, then it loops. Click to replay.
+   Sub-timings (icon stagger, sequential PIN fill, check draw) live in CSS
+   transition-delays, so the JS only switches the four phases.
+   ========================================================================= */
+(function(){
+  const app = document.getElementById('app');
+  const gcheck = document.getElementById('gcheck');
+
+  const MARKS = {
+    upi:   0,      // UPI selection appears (held longest)
+    pin:   1500,   // -> PIN entry
+    pay:   2900,   // -> ₹1 payment successful
+    bank:  3750,   // -> bank verification (smooth carry of the green check)
+    end:   5000,   // sequence complete
+    hold:  900     // pause on final state before looping
+  };
+
+  let timers = [];
+  const at = (t, fn) => timers.push(setTimeout(fn, t));
+  const clearAll = () => { timers.forEach(clearTimeout); timers = []; };
+
+  function setPhase(name){
+    app.classList.remove('phase-upi','phase-pin','phase-pay','phase-bank');
+    app.classList.add('phase-' + name);
+  }
+
+  function run(){
+    clearAll();
+    // reset to a clean first frame — suppress the shared-check transition for
+    // one frame so it snaps back to centre instead of animating on restart.
+    app.classList.add('resetting');
+    setPhase('upi');
+    gcheck.classList.remove('tick-in');
+    void app.offsetWidth;              // flush the snap
+    app.classList.remove('resetting');
+    void app.offsetWidth;              // re-arm transitions for the new cycle
+
+    at(MARKS.pin,  () => setPhase('pin'));
+
+    at(MARKS.pay,  () => {
+      setPhase('pay');
+      // reveal the shared green check (big, centred)
+      requestAnimationFrame(() => gcheck.classList.add('tick-in'));
+    });
+
+    at(MARKS.bank, () => {
+      // keep tick-in; phase-bank moves + shrinks the same check to the badge
+      setPhase('bank');
+    });
+
+    at(MARKS.end + MARKS.hold, run);   // loop
+  }
+
+  // Kick off once fonts/layout are ready (guarded so it starts exactly once).
+  let started = false;
+  const start = () => {
+    if (started) return; started = true;
+    requestAnimationFrame(() => requestAnimationFrame(run));
+  };
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(start);
+    setTimeout(start, 600); // fallback if fonts hang
+  } else {
+    start();
+  }
+
+  // Click / tap anywhere to replay immediately.
+  app.addEventListener('click', run);
+})();
+</script>
+</body>
+</html>
