@@ -99,13 +99,7 @@
   .pin-check{ margin-top:20px; opacity:0; transform:scale(.6);
     transition:opacity 260ms var(--ease), transform 300ms var(--ease); }
 
-  /* ===== STATE 3 — "₹1 Payment successful" (text; tick is the shared PNG) ===== */
-  .state-pay{ justify-content:flex-start; padding-top:58px; }
-  .pay-title{ font-size:17px; font-weight:500; color:var(--ink-2);
-    opacity:0; transform:translateY(8px);
-    transition:opacity var(--dur-fade) var(--ease), transform var(--dur-fade) var(--ease); }
-
-  /* ===== STATE 4 — bank verification (supplied PNG, badge baked in) ===== */
+  /* ===== STATE 3 (final) — bank verification (supplied PNG, badge baked in) ===== */
   .bank-glyph{ height:74px; width:auto; display:block; opacity:0; transform:scale(.86);
     transition:opacity var(--dur-move) var(--ease), transform var(--dur-move) var(--ease); margin-bottom:14px; }
   .bank-title{ font-size:14px; font-weight:600; color:var(--ink); text-align:center; white-space:nowrap; line-height:1.3;
@@ -114,23 +108,6 @@
   .bank-sub{ font-size:15px; font-weight:400; color:var(--grey-2); margin-top:6px;
     opacity:0; transform:translateY(8px);
     transition:opacity var(--dur-fade) var(--ease), transform var(--dur-fade) var(--ease); }
-
-  /* ===== Shared payment tick (supplied tick.png) =====
-     Big + centred at the payment state; on the way to the bank state it
-     shrinks and slides onto the exact spot where bank.png's own baked-in
-     badge fades in, then fades out — so the green check reads as ONE element
-     that becomes the bank badge (no double badge). */
-  .gcheck{
-    position:absolute; left:50%; top:59%;
-    width:82px; height:82px; margin:-41px 0 0 -41px;
-    display:block; opacity:0; transform:scale(.6);
-    transition:opacity 300ms var(--ease), transform var(--dur-move) var(--ease),
-               left var(--dur-move) var(--ease), top var(--dur-move) var(--ease),
-               width var(--dur-move) var(--ease), height var(--dur-move) var(--ease),
-               margin var(--dur-move) var(--ease);
-    z-index:3;
-  }
-  .gcheck.tick-in{ opacity:1; transform:scale(1); }
 
   /* ---------------- Refund line ---------------- */
   .refund{ text-align:center; font-size:14px; color:var(--grey-2); margin:16px 0 0; }
@@ -171,19 +148,10 @@
   .app.phase-pin .pin-dots .dot:nth-child(4){ transition-delay:880ms; }
   .app.phase-pin .pin-check{ opacity:1; transform:scale(1); transition-delay:1080ms; }
 
-  .app.phase-pay .state-pay{ opacity:1; }
-  .app.phase-pay .pay-title{ opacity:1; transform:none; transition-delay:40ms; }
-
   .app.phase-bank .state-bank{ opacity:1; }
   .app.phase-bank .bank-glyph{ opacity:1; transform:none; }
   .app.phase-bank .bank-title{ opacity:1; transform:none; transition-delay:200ms; }
   .app.phase-bank .bank-sub{ opacity:1; transform:none; transition-delay:280ms; }
-  /* tick shrinks + slides onto bank.png's baked badge, then fades out */
-  .app.phase-bank .gcheck{
-    left:55.3%; top:46.1%;
-    width:34px; height:34px; margin:-17px 0 0 -17px;
-    opacity:0;
-  }
 
   /* during the reset snap, suppress ALL transitions so nothing fades while we
      jump back to the hidden base state; transitions re-enable before phase-upi
@@ -258,20 +226,12 @@
           </div>
         </div>
 
-        <!-- STATE 3 : payment success (text; tick is the shared PNG below) -->
-        <div class="state state-pay">
-          <div class="pay-title">₹1 Payment successful</div>
-        </div>
-
-        <!-- STATE 4 : bank verification success — supplied PNG (badge baked in) -->
+        <!-- STATE 3 (final) : bank verification success — supplied PNG (badge baked in) -->
         <div class="state state-bank">
-          <img class="bank-glyph" src="data:image/png;base64,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" alt="Bank account verified" />
-          <div class="bank-title">Bank account verification successful</div>
+          <img class="bank-glyph" src="data:image/png;base64,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" alt="Bank verified" />
+          <div class="bank-title">Bank verification successful</div>
           <div class="bank-sub">Congratulations</div>
         </div>
-
-        <!-- SHARED payment tick (supplied tick.png): big at state 3 -> lands on the bank badge -->
-        <img class="gcheck" id="gcheck" src="data:image/png;base64,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" alt="" />
 
       </div><!-- /inner-card -->
     </div><!-- /outer-card -->
@@ -311,14 +271,12 @@
    ========================================================================= */
 (function(){
   const app = document.getElementById('app');
-  const gcheck = document.getElementById('gcheck');
 
   const MARKS = {
     upi:   0,      // UPI selection appears (icons settle one-by-one, held longest)
     pin:   1600,   // -> PIN entry (last icon settled ~1320ms)
-    pay:   3050,   // -> ₹1 payment successful
-    bank:  3800,   // -> bank verification (green check hands off to the badge)
-    end:   5000,   // loop scheduling point (final state settles ~4.85s)
+    bank:  3100,   // -> bank verification (after PIN check settles ~2980ms)
+    end:   4400,   // loop scheduling point (final state settles ~4.2s)
     hold:  900     // pause on final state before looping
   };
 
@@ -327,7 +285,7 @@
   const clearAll = () => { timers.forEach(clearTimeout); timers = []; };
 
   function setPhase(name){
-    app.classList.remove('phase-upi','phase-pin','phase-pay','phase-bank');
+    app.classList.remove('phase-upi','phase-pin','phase-bank');
     app.classList.add('phase-' + name);
   }
 
@@ -336,15 +294,13 @@
     // Snap to the hidden base state with transitions OFF, then re-enable them
     // and add phase-upi so the entrance (logo + staggered icons) animates.
     app.classList.add('resetting');
-    app.classList.remove('phase-upi','phase-pin','phase-pay','phase-bank');
-    gcheck.classList.remove('tick-in');
+    app.classList.remove('phase-upi','phase-pin','phase-bank');
     void app.offsetWidth;                 // paint the base (everything hidden)
     app.classList.remove('resetting');    // transitions back on
     void app.offsetWidth;
     app.classList.add('phase-upi');       // entrance animates from hidden
 
     at(MARKS.pin,  () => setPhase('pin'));
-    at(MARKS.pay,  () => { setPhase('pay'); requestAnimationFrame(() => gcheck.classList.add('tick-in')); });
     at(MARKS.bank, () => setPhase('bank'));
     at(MARKS.end + MARKS.hold, run);
   }
