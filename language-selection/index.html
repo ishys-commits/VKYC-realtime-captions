@@ -122,12 +122,12 @@ body{
                 color:var(--muted-2); font-weight:700; margin:0 0 8px; }
 .segmented{ display:flex; gap:4px; background:#EFEFF4; border-radius:11px; padding:4px; }
 .seg{
-  flex:1; border:none; background:transparent; border-radius:8px; cursor:pointer;
-  padding:8px 6px 6px; font-family:var(--font); color:var(--muted);
+  flex:1; min-width:0; border:none; background:transparent; border-radius:8px; cursor:pointer;
+  padding:8px 4px 6px; font-family:var(--font); color:var(--muted);
   display:flex; flex-direction:column; align-items:center; gap:2px;
 }
 .seg b{ font-size:13px; font-weight:700; color:var(--ink); }
-.seg small{ font-size:10px; color:var(--muted-2); font-weight:600; }
+.seg small{ font-size:10px; color:var(--muted-2); font-weight:600; white-space:nowrap; }
 .seg[aria-pressed="true"]{ background:var(--surface); box-shadow:var(--shadow-card); }
 .seg[aria-pressed="true"] b{ color:var(--indigo); }
 
@@ -215,6 +215,46 @@ body{
 .confirmed-note{ margin-top:10px; padding-top:10px; border-top:1px solid var(--hairline);
   font-size:13.5px; color:var(--muted); font-weight:500; display:flex; gap:7px; align-items:flex-start; }
 .confirmed-note svg{ flex:0 0 auto; margin-top:1px; color:var(--indigo); }
+
+/* ============================================================
+   GRID LAYOUT (Variation D)
+   2-up tiles modeled on the reference grid (Freeform / Arts & Culture):
+   a content body + a tinted footer strip, with a Freeform-style
+   selection check. Same tokens as the list — only the arrangement changes.
+   ============================================================ */
+.cards.is-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:stretch; }
+
+.tile{ display:flex; flex-direction:column; padding:0; overflow:hidden; min-height:158px; }
+.tile:hover{ border-color:var(--card-border-hover); }
+.tile.is-unavailable:hover{ border-color:var(--card-border); }
+
+.tile-body{ flex:1 1 auto; padding:13px 13px 12px; display:flex; flex-direction:column; }
+.tile-top{ display:flex; align-items:center; justify-content:space-between; gap:6px; min-height:24px; }
+
+/* selection check — empty ring, fills indigo when chosen (like the reference) */
+.pick{ width:22px;height:22px;border-radius:50%;border:2px solid #D7D7E2;background:#fff;
+       flex:0 0 auto; display:grid; place-items:center; }
+.tile.is-selected .pick{ background:var(--indigo); border-color:var(--indigo); }
+.tile.is-selected .pick svg{ opacity:1; }
+.pick svg{ opacity:0; }
+
+.tile-lang{ margin-top:auto; padding-top:12px; }
+.tile-lang .lang-name{ font-size:17px; font-weight:700; display:block; }
+.tile-lang .lang-native{ font-size:14px; display:block; margin-top:1px; }
+.tile-lang .near{ margin-top:7px; }
+
+/* footer strip — carries the status/meta, tinted by state */
+.tile-foot{ padding:9px 13px; font-size:12.5px; font-weight:600; line-height:1.34;
+            border-top:1px solid var(--hairline); background:var(--surface-sunken); color:var(--muted); }
+.tile-foot .q-strong{ color:var(--ink); font-weight:700; }
+.tile-foot.available{ background:var(--green-bg); color:var(--green-text); }
+.tile-foot.captions{ background:var(--amber-bg); color:var(--amber-text); }
+.tile-foot.selected{ background:var(--indigo-tint-2); color:var(--indigo); }
+.tile.is-captions{ border-color:var(--amber-border); }
+.tile.is-captions.is-selected{ border-color:var(--indigo); }
+
+/* very small phones: fall back to a single column so text never clips */
+@media (max-width:340px){ .cards.is-grid{ grid-template-columns:1fr; } }
 
 /* ============================================================
    FOOTER (terms + primary CTA)
@@ -311,9 +351,10 @@ body{
     <div class="explore">
       <p class="explore-label">Design exploration · card layout</p>
       <div class="segmented" role="group" aria-label="Card layout variation">
-        <button class="seg" data-var="A"><b>A</b><small>Status-first</small></button>
-        <button class="seg" data-var="B" aria-pressed="true"><b>B</b><small>Decision-first</small></button>
+        <button class="seg" data-var="A"><b>A</b><small>Status</small></button>
+        <button class="seg" data-var="B" aria-pressed="true"><b>B</b><small>Decision</small></button>
         <button class="seg" data-var="C"><b>C</b><small>Compact</small></button>
+        <button class="seg" data-var="D"><b>D</b><small>Grid</small></button>
       </div>
     </div>
 
@@ -408,6 +449,7 @@ const queueLine = L => `<span class="q-strong">You’re #${L.queue+1} in queue</
    All read the same data; they differ only in how info is grouped.
    ============================================================ */
 function renderCard(L){
+  if(state.variation==='D') return renderTile(L);   // grid mode
   const selected = state.selectedId === L.id;
   const confirmed = state.captionsConfirmedId === L.id;
   const cls = ['card',
@@ -518,10 +560,69 @@ function wireCard(card, L){
 }
 
 /* ============================================================
+   GRID TILE RENDERER (Variation D)
+   Same data, arranged as a 2-up tile: content body + tinted footer
+   strip, with a Freeform-style selection check.
+   ============================================================ */
+function renderTile(L){
+  const selected  = state.selectedId === L.id;
+  const confirmed = state.captionsConfirmedId === L.id;
+  const cls = ['card','tile',
+    L.status==='captions' ? 'is-captions' : '',
+    L.status==='unavailable' ? 'is-unavailable' : '',
+    selected ? 'is-selected' : ''
+  ].filter(Boolean).join(' ');
+
+  const tile = el('button', cls);
+  tile.type='button';
+  tile.dataset.id = L.id;
+  if(L.status==='unavailable'){ tile.disabled = true; }
+
+  // top badge
+  let badge='';
+  if(confirmed)                       badge = `<span class="badge on"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.5 2.5L10 3"/></svg>Captions on</span>`;
+  else if(L.status==='available')     badge = `<span class="badge available">Available</span>`;
+  else if(L.status==='captions')      badge = `<span class="badge captions">Captions</span>`;
+  else                                badge = `<span class="badge unavailable">Unavailable</span>`;
+
+  // selection check (only for selectable tiles)
+  const pick = (L.status!=='unavailable')
+    ? `<span class="pick"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.5 2.5L10 3"/></svg></span>`
+    : '';
+
+  const nearBadge = L.nearYou ? `<span class="near">Near you</span>` : '';
+
+  // footer strip: tone + text per state
+  let footTone='', footText='';
+  if(confirmed){ footTone='selected'; footText = `Talk in ${L.agentLang} · ${L.name} captions on`; }
+  else if(L.status==='available'){ footTone = selected ? 'selected' : '';
+    footText = `<span class="q-strong">#${L.queue+1} in queue</span> · ${L.wait}`; }
+  else if(L.status==='captions'){ footTone='captions';
+    footText = `Talk in ${L.agentLang}, read ${L.name} captions`; }
+  else { footTone=''; footText = L.nextAt ? `Back ${L.nextAt}` : 'No agent right now'; }
+
+  tile.innerHTML =
+    `<div class="tile-body">
+       <div class="tile-top">${badge}${pick}</div>
+       <div class="tile-lang">${nameHtml(L)}${nearBadge}</div>
+     </div>
+     <div class="tile-foot ${footTone}">${footText}</div>`;
+
+  // interaction
+  if(L.status==='available' || confirmed){
+    tile.addEventListener('click', ()=> selectLanguage(L.id));
+  } else if(L.status==='captions'){
+    tile.addEventListener('click', ()=> openSheet(L.id));   // whole tile opts into confirm
+  }
+  return tile;
+}
+
+/* ============================================================
    RENDER
    ============================================================ */
 function render(){
   const wrap = $('#cards');
+  wrap.className = 'cards' + (state.variation==='D' ? ' is-grid' : '');
   wrap.innerHTML='';
   LANGS.forEach(L => wrap.appendChild(renderCard(L)));
   updateCTA();

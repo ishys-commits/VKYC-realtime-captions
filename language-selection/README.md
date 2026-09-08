@@ -67,6 +67,13 @@ exploration rather than deleted.
   of understanding the consequence of a choice.
 - **C — Compact.** Tightest vertical rhythm — a single metadata row, CTA only
   where needed. Best when many languages must fit.
+- **D — Grid.** A 2-up tile grid modeled on the reference grid layout
+  (Freeform / Google Arts & Culture): each tile is a content body (status
+  badge + Freeform-style selection check + language name) over a tinted footer
+  strip that carries the status/meta — neutral for available/unavailable, amber
+  for captions, indigo when selected. Best for scanning many languages at a
+  glance; captions still open the confirmation sheet, and the dynamic CTA is
+  unchanged.
 
 **Recommendation: Variation B.** The screen's job is to let the user
 understand the *consequence* of each choice (speak now / wait / read captions /
