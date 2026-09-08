@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>VKYC · Choose your language</title>
+<style>
+/* ============================================================
+   DESIGN SYSTEM TOKENS
+   Source of truth = the reference "Choose your language" screen.
+   Nothing here is borrowed from the moodboard's visual language;
+   the moodboard only informed how information is grouped.
+   ============================================================ */
+:root{
+  /* Brand */
+  --indigo:            #635BFF;   /* primary action / selection */
+  --indigo-press:      #574fe6;
+  --indigo-tint:       #F4F3FF;   /* selected card fill */
+  --indigo-tint-2:     #ECEBFF;
+
+  /* Status treatments (kept from the reference: green = good) */
+  --green-text:        #1E874B;
+  --green-bg:          #E7F4EC;
+  --green-border:      #CDE9D8;
+
+  /* Warning / fallback treatment (amber) — used for the captions path */
+  --amber-text:        #A8631A;
+  --amber-bg:          #FCF3E6;
+  --amber-border:      #F1DBB4;
+
+  /* Neutrals */
+  --ink:               #23233A;   /* primary text */
+  --ink-strong:        #1A1A2C;   /* titles */
+  --muted:             #6C6C7C;   /* secondary text */
+  --muted-2:           #9A9AA8;   /* tertiary / disabled */
+  --hairline:          #ECECF2;
+
+  --card-border:       #E6E6EF;
+  --card-border-hover: #D7D7E4;
+  --surface:           #FFFFFF;
+  --surface-sunken:    #F6F6FA;   /* unavailable card fill */
+  --page:              #EFEFF3;   /* area around the phone on desktop */
+
+  --radius-card:       16px;
+  --radius-btn:        14px;
+  --radius-pill:       999px;
+
+  --shadow-card:       0 1px 2px rgba(24,24,40,.04);
+  --shadow-cta:        0 8px 24px rgba(99,91,255,.28);
+  --shadow-sheet:      0 -12px 40px rgba(20,20,40,.18);
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter,
+          "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-native: "Noto Sans", "Noto Sans Devanagari", "Noto Sans Bengali",
+          "Noto Sans Tamil", "Noto Sans Telugu", "Noto Sans Kannada",
+          "Noto Sans Gujarati", var(--font);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--font);
+  color:var(--ink);
+  background:var(--page);
+  display:flex;
+  justify-content:center;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* ---------- Phone frame (desktop convenience only) ---------- */
+.phone{
+  width:100%;
+  max-width:412px;
+  background:var(--surface);
+  height:100vh;
+  height:100dvh;         /* fixed viewport so footer CTA stays pinned + sheet anchors */
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 0 0 1px rgba(20,20,40,.05);
+}
+@media (min-width:460px){
+  .phone{ min-height:auto; height:860px; margin:24px 0; border-radius:38px;
+          overflow:hidden; box-shadow:0 24px 60px rgba(20,20,45,.22); }
+}
+
+/* ---------- Status bar ---------- */
+.statusbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 22px 2px; font-weight:600; font-size:15px; color:var(--ink-strong);
+  flex:0 0 auto;
+}
+.statusbar .glyphs{display:flex; gap:6px; align-items:center; opacity:.9}
+.statusbar .glyphs svg{display:block}
+
+/* ---------- Top row (close) ---------- */
+.topbar{ display:flex; justify-content:flex-end; padding:6px 20px 0; flex:0 0 auto; }
+.icon-btn{
+  width:38px;height:38px;border-radius:var(--radius-pill);border:none;
+  background:#F1F1F5;color:#41414f;display:grid;place-items:center;cursor:pointer;
+}
+.icon-btn:active{background:#E7E7ED}
+
+/* ---------- Scroll area ---------- */
+.scroll{ flex:1 1 auto; min-height:0; overflow-y:auto; padding:6px 20px 8px; -webkit-overflow-scrolling:touch; }
+
+/* ---------- Header ---------- */
+.header{ margin:10px 2px 4px; }
+.title{ font-size:29px; line-height:1.14; font-weight:800; letter-spacing:-.02em;
+        color:var(--ink-strong); margin:0 0 8px; }
+.subtitle{ font-size:16px; color:var(--muted); margin:0; font-weight:450; }
+
+/* ---------- Variation switcher (exploration control) ---------- */
+.explore{
+  margin:16px 2px 6px; border:1px dashed var(--card-border-hover);
+  border-radius:14px; padding:10px 12px; background:#FBFBFD;
+}
+.explore-label{ font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+                color:var(--muted-2); font-weight:700; margin:0 0 8px; }
+.segmented{ display:flex; gap:4px; background:#EFEFF4; border-radius:11px; padding:4px; }
+.seg{
+  flex:1; border:none; background:transparent; border-radius:8px; cursor:pointer;
+  padding:8px 6px 6px; font-family:var(--font); color:var(--muted);
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+}
+.seg b{ font-size:13px; font-weight:700; color:var(--ink); }
+.seg small{ font-size:10px; color:var(--muted-2); font-weight:600; }
+.seg[aria-pressed="true"]{ background:var(--surface); box-shadow:var(--shadow-card); }
+.seg[aria-pressed="true"] b{ color:var(--indigo); }
+
+/* ---------- Section label (very lightweight, optional) ---------- */
+.sec-label{ font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+            font-weight:700; color:var(--muted-2); margin:18px 4px 8px; }
+
+/* ============================================================
+   LANGUAGE CARD
+   ============================================================ */
+.cards{ display:flex; flex-direction:column; gap:12px; }
+
+.card{
+  position:relative; width:100%; text-align:left; cursor:pointer;
+  background:var(--surface);
+  border:1.5px solid var(--card-border);
+  border-radius:var(--radius-card);
+  padding:16px 16px;
+  font-family:var(--font);
+  box-shadow:var(--shadow-card);
+  transition:border-color .14s ease, background .14s ease, box-shadow .14s ease;
+}
+.card:hover{ border-color:var(--card-border-hover); }
+.card:focus-visible{ outline:2px solid var(--indigo); outline-offset:2px; }
+
+/* Selected (indigo) — the reference selection treatment */
+.card.is-selected{ border-color:var(--indigo); background:var(--indigo-tint);
+                   box-shadow:0 0 0 3px rgba(99,91,255,.10); }
+
+/* Captions path — valid but distinct. Amber left accent, never "dead". */
+.card.is-captions{ border-color:var(--amber-border); background:#FFFDFA; }
+.card.is-captions.is-selected{ border-color:var(--indigo); background:var(--indigo-tint); }
+
+/* Unavailable — quiet, not an error */
+.card.is-unavailable{ background:var(--surface-sunken); border-color:var(--card-border);
+                      cursor:not-allowed; box-shadow:none; }
+.card.is-unavailable:hover{ border-color:var(--card-border); }
+
+/* Card top row: name (left) + status (right) */
+.card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.lang{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; min-width:0; }
+.lang-name{ font-size:18px; font-weight:700; color:var(--ink-strong); letter-spacing:-.01em; }
+.card.is-unavailable .lang-name{ color:#7E7E8C; }
+.lang-native{ font-size:15px; color:var(--muted); font-weight:500; font-family:var(--font-native); }
+.card.is-unavailable .lang-native{ color:var(--muted-2); }
+
+/* "Near you" contextual modifier — small, never a full line */
+.near{ font-size:11px; font-weight:700; color:var(--indigo); background:var(--indigo-tint-2);
+       border-radius:var(--radius-pill); padding:2px 8px; letter-spacing:.01em;
+       display:inline-flex; align-items:center; gap:3px; white-space:nowrap; }
+
+/* Status badges (right slot) */
+.badge{ font-size:12.5px; font-weight:700; border-radius:var(--radius-pill);
+        padding:4px 11px; white-space:nowrap; line-height:1.3; flex:0 0 auto; }
+.badge.available{ color:var(--green-text); background:var(--green-bg); }
+.badge.captions{ color:var(--amber-text); background:var(--amber-bg); }
+.badge.unavailable{ color:var(--muted); background:#ECECEF; }
+.badge.on{ color:#fff; background:var(--indigo); display:inline-flex; align-items:center; gap:5px; }
+
+/* Secondary + meta lines */
+.card-sub{ margin:8px 0 0; font-size:14.5px; color:var(--ink); font-weight:550; }
+.card.is-unavailable .card-sub{ color:var(--muted); font-weight:500; }
+.card-meta{ margin:5px 0 0; font-size:13.5px; color:var(--muted); font-weight:500;
+            display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.card-meta .dot{ width:3px;height:3px;border-radius:50%;background:var(--muted-2); flex:0 0 auto; }
+.card-meta .q-strong{ color:var(--ink); font-weight:650; }
+.card-next{ margin:6px 0 0; font-size:13.5px; color:var(--muted); font-weight:500; }
+
+/* Captions explainer + inline CTA */
+.captions-explain{ margin:9px 0 0; font-size:14px; color:var(--ink); font-weight:550;
+                   line-height:1.42; }
+.captions-explain .en{ color:var(--muted); font-weight:500; }
+.captions-cta{
+  margin-top:12px; width:100%; border:1.5px solid var(--amber-border);
+  background:var(--amber-bg); color:var(--amber-text);
+  font-family:var(--font); font-weight:700; font-size:14.5px;
+  border-radius:12px; padding:11px 12px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; gap:8px;
+  transition:background .14s ease, border-color .14s ease;
+}
+.captions-cta:hover{ background:#F9EDD9; }
+.card.is-selected .captions-cta{ display:none; }
+
+/* Captions-confirmed detail inside selected card */
+.confirmed-note{ margin-top:10px; padding-top:10px; border-top:1px solid var(--hairline);
+  font-size:13.5px; color:var(--muted); font-weight:500; display:flex; gap:7px; align-items:flex-start; }
+.confirmed-note svg{ flex:0 0 auto; margin-top:1px; color:var(--indigo); }
+
+/* ============================================================
+   FOOTER (terms + primary CTA)
+   ============================================================ */
+.footer{ flex:0 0 auto; padding:12px 20px calc(14px + env(safe-area-inset-bottom));
+         background:linear-gradient(to top, var(--surface) 78%, rgba(255,255,255,0));
+         border-top:1px solid var(--hairline); }
+.terms{ display:flex; align-items:flex-start; gap:10px; margin:2px 2px 12px; }
+.check{ width:22px;height:22px;border-radius:6px;border:1.5px solid var(--card-border-hover);
+        background:#fff; display:grid; place-items:center; cursor:pointer; flex:0 0 auto; margin-top:1px; }
+.check[aria-checked="true"]{ background:var(--indigo); border-color:var(--indigo); }
+.check svg{ opacity:0; }
+.check[aria-checked="true"] svg{ opacity:1; }
+.terms p{ margin:0; font-size:13px; color:var(--muted); line-height:1.45; }
+.terms a{ color:var(--indigo); text-decoration:none; font-weight:600; }
+
+.cta{
+  width:100%; border:none; border-radius:var(--radius-btn);
+  background:var(--indigo); color:#fff; font-family:var(--font);
+  font-weight:750; font-size:16.5px; padding:16px 18px; cursor:pointer;
+  box-shadow:var(--shadow-cta); transition:background .14s ease, transform .06s ease;
+}
+.cta:active{ transform:translateY(1px); }
+.cta:hover{ background:var(--indigo-press); }
+.cta[disabled]{ background:#C9C7DF; box-shadow:none; cursor:not-allowed; color:#fff; }
+
+.powered{ display:flex; align-items:center; justify-content:center; gap:7px;
+          margin:12px 0 2px; font-size:13px; color:var(--muted); font-weight:600; }
+.powered svg{ color:#1E874B; }
+
+/* ============================================================
+   CONFIRMATION SHEET (captions opt-in)
+   ============================================================ */
+.scrim{ position:absolute; inset:0; background:rgba(20,20,38,.42); opacity:0;
+        pointer-events:none; transition:opacity .2s ease; z-index:20; }
+.scrim.open{ opacity:1; pointer-events:auto; }
+.sheet{
+  position:absolute; left:0; right:0; bottom:0; z-index:21;
+  background:var(--surface); border-radius:22px 22px 0 0; padding:8px 22px
+  calc(22px + env(safe-area-inset-bottom));
+  transform:translateY(102%); transition:transform .26s cubic-bezier(.22,.61,.36,1);
+  box-shadow:var(--shadow-sheet);
+}
+.sheet.open{ transform:translateY(0); }
+.grab{ width:38px;height:4px;border-radius:99px;background:#E2E2EA;margin:6px auto 14px; }
+.sheet-title{ font-size:21px; font-weight:800; color:var(--ink-strong); margin:0 0 2px;
+              font-family:var(--font-native); letter-spacing:-.01em; }
+.sheet-title-en{ font-size:14px; color:var(--muted); font-weight:500; margin:0 0 16px; }
+.point{ display:flex; gap:12px; padding:11px 0; border-top:1px solid var(--hairline); }
+.point:first-of-type{ border-top:none; }
+.point .p-ic{ width:34px;height:34px;border-radius:10px;flex:0 0 auto; display:grid; place-items:center; }
+.p-ic.a{ background:var(--amber-bg); color:var(--amber-text); }
+.p-ic.b{ background:var(--indigo-tint-2); color:var(--indigo); }
+.p-ic.c{ background:var(--green-bg); color:var(--green-text); }
+.point .p-txt{ min-width:0; }
+.point .p-native{ font-size:15px; font-weight:650; color:var(--ink); font-family:var(--font-native);
+                  line-height:1.35; }
+.point .p-en{ font-size:13px; color:var(--muted); font-weight:500; margin-top:2px; }
+.sheet-actions{ margin-top:18px; display:flex; flex-direction:column; gap:10px; }
+.sheet-cta{ width:100%; border:none; border-radius:var(--radius-btn); background:var(--indigo);
+            color:#fff; font-family:var(--font); font-weight:750; font-size:16px; padding:15px;
+            cursor:pointer; box-shadow:var(--shadow-cta); }
+.sheet-cta:hover{ background:var(--indigo-press); }
+.sheet-cta.ghost{ background:transparent; color:var(--muted); box-shadow:none; font-weight:650;
+                  font-size:15px; padding:8px; }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+  <!-- status bar (echoes reference) -->
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="glyphs">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><path d="M8.5 2.4c2.3 0 4.4.9 6 2.3l1.2-1.3A11 11 0 0 0 8.5.5 11 11 0 0 0 1.3 3.4L2.5 4.7a8.6 8.6 0 0 1 6-2.3Z"/><path d="M8.5 6c1.2 0 2.3.45 3.1 1.2l1.2-1.3A6.6 6.6 0 0 0 8.5 4.2 6.6 6.6 0 0 0 4.2 5.9l1.2 1.3A4.6 4.6 0 0 1 8.5 6Z"/><circle cx="8.5" cy="10" r="1.6"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/><rect x="23.5" y="4" width="1.8" height="4" rx="1" fill="currentColor" opacity=".6"/></svg>
+    </span>
+  </div>
+
+  <div class="topbar">
+    <button class="icon-btn" aria-label="Close">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l11 11M13 2L2 13"/></svg>
+    </button>
+  </div>
+
+  <div class="scroll">
+    <div class="header">
+      <h1 class="title">Choose your language</h1>
+      <p class="subtitle">You’ll read and speak in this language</p>
+    </div>
+
+    <!-- Design exploration switcher (temporary — see README) -->
+    <div class="explore">
+      <p class="explore-label">Design exploration · card layout</p>
+      <div class="segmented" role="group" aria-label="Card layout variation">
+        <button class="seg" data-var="A"><b>A</b><small>Status-first</small></button>
+        <button class="seg" data-var="B" aria-pressed="true"><b>B</b><small>Decision-first</small></button>
+        <button class="seg" data-var="C"><b>C</b><small>Compact</small></button>
+      </div>
+    </div>
+
+    <div class="cards" id="cards"><!-- rendered by JS --></div>
+  </div>
+
+  <div class="footer">
+    <div class="terms">
+      <div class="check" id="check" role="checkbox" aria-checked="true" tabindex="0">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l3 3 6-7"/></svg>
+      </div>
+      <p>By continuing, you agree to our <a href="#">terms of use</a> and <a href="#">Privacy policy</a></p>
+    </div>
+    <button class="cta" id="cta" disabled>Select a language</button>
+    <div class="powered">
+      <svg width="15" height="16" viewBox="0 0 15 16" fill="currentColor"><path d="M7.5 0l7 2.4v5.1c0 4-2.9 7-7 8.5-4.1-1.5-7-4.5-7-8.5V2.4L7.5 0Z" opacity=".18"/><path d="M7.5 1.4l5.6 1.9v4.2c0 3.2-2.3 5.6-5.6 6.9C4.2 13.1 1.9 10.7 1.9 7.5V3.3l5.6-1.9Z" opacity=".25"/><path d="M6.7 9.6L4.9 7.8l1-1 .8.8 2.6-2.6 1 1-3.6 3.6Z"/></svg>
+      powered by HyperVerge
+    </div>
+  </div>
+
+  <!-- Confirmation sheet -->
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grab"></div>
+    <h2 class="sheet-title" id="sheetTitle"></h2>
+    <p class="sheet-title-en" id="sheetTitleEn"></p>
+    <div id="sheetPoints"></div>
+    <div class="sheet-actions">
+      <button class="sheet-cta" id="sheetConfirm"></button>
+      <button class="sheet-cta ghost" id="sheetCancel">Choose another language</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   DATA MODEL
+   status: 'available' | 'captions' | 'unavailable'
+   - available : a matching-language agent exists -> selectable, speak in language
+   - captions  : NO matching-language agent, but user can talk to an
+                 agent in `agentLang` while reading captions in this language
+   - unavailable: no matching agent and no captions path (may have nextAt)
+   ============================================================ */
+const LANGS = [
+  { id:'en', name:'English', native:'', status:'available', queue:2, wait:'~1 min' },
+  { id:'hi', name:'Hindi', native:'हिन्दी', status:'available', queue:3, wait:'~2 min' },
+  { id:'kn', name:'Kannada', native:'ಕನ್ನಡ', status:'available', queue:2, wait:'~1 min', nearYou:true },
+  { id:'mr', name:'Marathi', native:'मराठी', status:'available', queue:6, wait:'~5 min' },
+  { id:'bn', name:'Bengali', native:'বাংলা', status:'captions', agentLang:'English',
+    confirm:{
+      title:'বাংলা ক্যাপশন চালু করবেন?',
+      titleEn:'Continue with Bengali captions?',
+      points:[
+        { ic:'a', native:'এখন কোনো বাংলা-ভাষী এজেন্ট নেই।', en:'No Bengali-speaking agent is available right now.' },
+        { ic:'b', native:'এজেন্ট ইংরেজিতে কথা বলবেন।', en:'The agent will speak to you in English.' },
+        { ic:'c', native:'আপনি বাংলায় ক্যাপশন পড়তে পারবেন।', en:'You’ll read live captions in Bengali as you talk.' },
+      ]
+    }
+  },
+  { id:'ta', name:'Tamil', native:'தமிழ்', status:'captions', agentLang:'English',
+    confirm:{
+      title:'தமிழ் வசனங்களுடன் தொடரவா?',
+      titleEn:'Continue with Tamil captions?',
+      points:[
+        { ic:'a', native:'இப்போது தமிழ் பேசும் முகவர் இல்லை.', en:'No Tamil-speaking agent is available right now.' },
+        { ic:'b', native:'முகவர் ஆங்கிலத்தில் பேசுவார்.', en:'The agent will speak to you in English.' },
+        { ic:'c', native:'நீங்கள் தமிழில் வசனங்களைப் படிக்கலாம்.', en:'You’ll read live captions in Tamil as you talk.' },
+      ]
+    }
+  },
+  { id:'gu', name:'Gujarati', native:'ગુજરાતી', status:'unavailable', nextAt:'tomorrow at 9:00 AM' },
+  { id:'pa', name:'Punjabi', native:'ਪੰਜਾਬੀ', status:'unavailable' },
+];
+
+let state = {
+  variation:'B',
+  selectedId:null,
+  captionsConfirmedId:null,   // a captions lang the user opted into
+  termsChecked:true,
+  pendingCaptionsId:null,     // lang awaiting confirmation in the sheet
+};
+
+/* ---------- small helpers ---------- */
+const $ = s => document.querySelector(s);
+const el = (tag, cls, html) => { const n=document.createElement(tag); if(cls)n.className=cls; if(html!=null)n.innerHTML=html; return n; };
+const nameHtml = L => `<span class="lang-name">${L.name}</span>` + (L.native?`<span class="lang-native">${L.native}</span>`:'');
+const queueLine = L => `<span class="q-strong">You’re #${L.queue+1} in queue</span><span class="dot"></span>${L.wait} wait`;
+
+/* ============================================================
+   CARD RENDERERS — one per variation.
+   All read the same data; they differ only in how info is grouped.
+   ============================================================ */
+function renderCard(L){
+  const selected = state.selectedId === L.id;
+  const confirmed = state.captionsConfirmedId === L.id;
+  const cls = ['card',
+    L.status==='captions' ? 'is-captions' : '',
+    L.status==='unavailable' ? 'is-unavailable' : '',
+    selected ? 'is-selected' : ''
+  ].filter(Boolean).join(' ');
+
+  const card = el('button', cls);
+  card.type='button';
+  card.dataset.id = L.id;
+  if(L.status==='unavailable'){ card.disabled = true; }
+
+  const nearBadge = L.nearYou ? `<span class="near">Near you</span>` : '';
+
+  /* ----- Right-slot status badge ----- */
+  let badge='';
+  if(confirmed){
+    badge = `<span class="badge on"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5l2.5 2.5L10 3"/></svg>Captions on</span>`;
+  } else if(L.status==='available'){
+    badge = `<span class="badge available">Available</span>`;
+  } else if(L.status==='captions'){
+    badge = state.variation==='A'
+      ? `<span class="badge captions">Read-along</span>`
+      : (state.variation==='C' ? `<span class="badge captions">Captions</span>` : '');
+  } else if(L.status==='unavailable'){
+    badge = `<span class="badge unavailable">Unavailable</span>`;
+  }
+
+  const top = `<div class="card-top"><div class="lang">${nameHtml(L)}${nearBadge}</div>${badge}</div>`;
+
+  let body='';
+
+  /* ---------- CONFIRMED captions (works across variations) ---------- */
+  if(confirmed){
+    body = `<div class="confirmed-note">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h11v7H2zM4.5 8h6M4.5 6h3"/></svg>
+      <span>You’ll talk to an <b>${L.agentLang}-speaking</b> agent and read <b>${L.name}</b> captions.</span>
+    </div>`;
+    card.innerHTML = top + body;
+    wireCard(card, L);
+    return card;
+  }
+
+  /* ---------- AVAILABLE ---------- */
+  if(L.status==='available'){
+    if(state.variation==='A'){                 // status-first: name+badge, compact meta below
+      body = `<div class="card-meta">${queueLine(L)}</div>`;
+    } else if(state.variation==='B'){          // decision-first: what happens if you pick it
+      body = `<div class="card-sub">Speak in ${L.name} with a live agent</div>
+              <div class="card-meta"><span class="q-strong">You’re #${L.queue+1}</span><span class="dot"></span>${L.wait} wait</div>`;
+    } else {                                    // compact: single tight meta row
+      body = `<div class="card-meta">#${L.queue+1} in queue<span class="dot"></span>${L.wait}</div>`;
+    }
+  }
+
+  /* ---------- CAPTIONS (no matching agent, captions path available) ---------- */
+  else if(L.status==='captions'){
+    const ctaLabel = `Continue with ${L.name} captions`;
+    const ctaBtn = `<button class="captions-cta" data-captions="${L.id}">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.5h11v8H2zM4.5 8.5h6M4.5 6.5h3.5"/></svg>${ctaLabel}</button>`;
+
+    if(state.variation==='A'){                 // status-first
+      body = `<div class="card-sub">No ${L.name}-speaking agent right now</div>
+              <div class="captions-explain">Talk to an <b>${L.agentLang}-speaking</b> agent with <b>${L.name}</b> captions.</div>
+              ${ctaBtn}`;
+    } else if(state.variation==='B'){          // decision-first: lead with the consequence
+      body = `<div class="card-sub">Talk in ${L.agentLang}, read ${L.name} captions</div>
+              <div class="card-meta">No ${L.name}-speaking agent right now</div>
+              ${ctaBtn}`;
+    } else {                                    // compact
+      body = `<div class="card-meta">No ${L.name} agent<span class="dot"></span>read ${L.name} captions</div>
+              ${ctaBtn}`;
+    }
+  }
+
+  /* ---------- UNAVAILABLE ---------- */
+  else if(L.status==='unavailable'){
+    const nextLine = L.nextAt ? `<div class="card-next">Available ${L.nextAt}</div>` : '';
+    if(state.variation==='C'){
+      body = `<div class="card-meta">No ${L.name}-speaking agent${L.nextAt?` <span class="dot"></span> back ${L.nextAt}`:''}</div>`;
+    } else {
+      body = `<div class="card-sub">No ${L.name}-speaking agent right now</div>${nextLine}`;
+    }
+  }
+
+  card.innerHTML = top + body;
+  wireCard(card, L);
+  return card;
+}
+
+function wireCard(card, L){
+  // Whole-card selection for available; captions handled by inner CTA
+  if(L.status==='available'){
+    card.addEventListener('click', ()=> selectLanguage(L.id));
+  }
+  if(L.status==='captions'){
+    // Tapping an already-confirmed captions card keeps it selected; re-tap card = no-op,
+    // opt-in happens via the inner CTA.
+    const inner = card.querySelector('[data-captions]');
+    if(inner){
+      inner.addEventListener('click', (e)=>{ e.stopPropagation(); openSheet(L.id); });
+    } else {
+      // confirmed state: tapping selects it again (idempotent)
+      card.addEventListener('click', ()=> selectLanguage(L.id, true));
+    }
+  }
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  const wrap = $('#cards');
+  wrap.innerHTML='';
+  LANGS.forEach(L => wrap.appendChild(renderCard(L)));
+  updateCTA();
+}
+
+function updateCTA(){
+  const cta = $('#cta');
+  const L = LANGS.find(x=>x.id===state.selectedId);
+  const ready = L && state.termsChecked;
+  cta.disabled = !ready;
+  if(!L){ cta.textContent = state.termsChecked ? 'Select a language' : 'Accept the terms to continue'; return; }
+  if(state.captionsConfirmedId === L.id){
+    cta.textContent = `Continue with ${L.name} captions`;
+  } else {
+    cta.textContent = `Continue in ${L.name}`;
+  }
+}
+
+/* ============================================================
+   SELECTION LOGIC
+   ============================================================ */
+function selectLanguage(id){
+  state.selectedId = id;
+  // selecting a normal available language clears any captions opt-in
+  const L = LANGS.find(x=>x.id===id);
+  if(!L || L.status!=='captions'){ state.captionsConfirmedId = null; }
+  render();
+}
+
+/* ---------- Confirmation sheet ---------- */
+function openSheet(id){
+  const L = LANGS.find(x=>x.id===id);
+  if(!L || !L.confirm) return;
+  state.pendingCaptionsId = id;
+  $('#sheetTitle').textContent = L.confirm.title;
+  $('#sheetTitleEn').textContent = L.confirm.titleEn;
+  const pts = $('#sheetPoints'); pts.innerHTML='';
+  L.confirm.points.forEach(p=>{
+    const icon = {
+      a:`<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="6.5"/><path d="M8.5 5v4M8.5 11.5v.2"/></svg>`,
+      b:`<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3.5h11v7H8l-3 2.5V10.5H3z"/></svg>`,
+      c:`<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h12v8h-12zM5 10h7M5 7.5h4"/></svg>`
+    }[p.ic];
+    const row = el('div','point',
+      `<div class="p-ic ${p.ic}">${icon}</div>
+       <div class="p-txt"><div class="p-native">${p.native}</div><div class="p-en">${p.en}</div></div>`);
+    pts.appendChild(row);
+  });
+  $('#sheetConfirm').textContent = `Continue with ${L.name} captions`;
+  $('#scrim').classList.add('open');
+  $('#sheet').classList.add('open');
+}
+function closeSheet(){
+  state.pendingCaptionsId = null;
+  $('#scrim').classList.remove('open');
+  $('#sheet').classList.remove('open');
+}
+function confirmCaptions(){
+  const id = state.pendingCaptionsId;
+  if(!id) return;
+  state.captionsConfirmedId = id;
+  state.selectedId = id;
+  closeSheet();
+  render();
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+document.querySelectorAll('.seg').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.seg').forEach(b=>b.removeAttribute('aria-pressed'));
+    btn.setAttribute('aria-pressed','true');
+    state.variation = btn.dataset.var;
+    render();
+  });
+});
+
+const check = $('#check');
+function toggleTerms(){ state.termsChecked = !state.termsChecked;
+  check.setAttribute('aria-checked', String(state.termsChecked)); updateCTA(); }
+check.addEventListener('click', toggleTerms);
+check.addEventListener('keydown', e=>{ if(e.key===' '||e.key==='Enter'){ e.preventDefault(); toggleTerms(); }});
+
+$('#sheetConfirm').addEventListener('click', confirmCaptions);
+$('#sheetCancel').addEventListener('click', closeSheet);
+$('#scrim').addEventListener('click', closeSheet);
+$('#cta').addEventListener('click', ()=>{
+  const L = LANGS.find(x=>x.id===state.selectedId);
+  if(!L) return;
+  const mode = state.captionsConfirmedId===L.id ? `${L.name} + captions (agent speaks ${L.agentLang})` : L.name;
+  alert(`Starting Video KYC · ${mode}`);
+});
+
+render();
+</script>
+</body>
+</html>
