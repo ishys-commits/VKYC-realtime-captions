@@ -68,12 +68,19 @@ exploration rather than deleted.
 - **C — Compact.** Tightest vertical rhythm — a single metadata row, CTA only
   where needed. Best when many languages must fit.
 - **D — Grid.** A 2-up tile grid modeled on the reference grid layout
-  (Freeform / Google Arts & Culture): each tile is a content body (status
-  badge + Freeform-style selection check + language name) over a tinted footer
-  strip that carries the status/meta — neutral for available/unavailable, amber
-  for captions, indigo when selected. Best for scanning many languages at a
-  glance; captions still open the confirmation sheet, and the dynamic CTA is
-  unchanged.
+  (Freeform / Google Arts & Culture). Best for scanning many languages at a
+  glance; captions still open the confirmation sheet and the dynamic CTA is
+  unchanged. A secondary **Grid style** switcher (visible only in grid mode)
+  offers four tile treatments — all on the same design system:
+  - **Strip** — content body (status badge + Freeform-style selection check +
+    language name) over a tinted footer strip carrying the status/meta
+    (neutral / amber for captions / indigo when selected).
+  - **Stacked** — Google-Arts style: a colored status eyebrow, language name,
+    native script, then the meta line. No footer band.
+  - **Centered** — spacious centered tiles: name, native, a status pill, meta,
+    with the selection check in the corner.
+  - **Accent** — compact tiles with a colored left status bar (green / amber /
+    grey / indigo-when-selected), status eyebrow, name and meta.
 
 **Recommendation: Variation B.** The screen's job is to let the user
 understand the *consequence* of each choice (speak now / wait / read captions /
